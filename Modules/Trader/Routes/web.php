@@ -12,5 +12,7 @@
 */
 
 Route::prefix('trader')->group(function() {
-    Route::get('/', 'TraderController@index');
+    Route::get('/', function (){
+        dd(config('symbol'));
+    });
 });

@@ -23,20 +23,5 @@ use Modules\Symbol\Entities\Symbol;
 */
 
 Route::get('ex',function (){/*
-    $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
-    $tgBot->sendMessage([
-        'chat_id'=>env('TELEGRAM_CHAT_ID'),
-        'text'=>'Mexc -> ByBit | XTZ/USDT
-📉Покупка:
-Объем: 15074.72 USDT -> 13129 XTZ
-Цена: 1.14766-1.14879$
-📈Продажа:
-Объем: 13129 XTZ -> 16783.44 USDT
-Цена: 1.358-1.2052$
-Профит: 1708.72 USDT
-Спред: 11.34%
-📤Вывод:
-✅ Mexc | ✅ Bybit
-'
-    ]);*/
+*/
 });
