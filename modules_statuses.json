@@ -1,0 +1,7 @@
+{
+    "User": true,
+    "Quotation": true,
+    "Deal": true,
+    "Symbol": true,
+    "Trader": true
+}

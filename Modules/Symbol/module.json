@@ -1,0 +1,11 @@
+{
+    "name": "Symbol",
+    "alias": "symbol",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Symbol\\Providers\\SymbolServiceProvider"
+    ],
+    "files": []
+}
