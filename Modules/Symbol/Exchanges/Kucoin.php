@@ -9,7 +9,7 @@ class Kucoin extends Exchange
 
     public function __construct()
     {
-        $this->sdk = new \Lin\Ku\Kucoin(/*env('KUCOIN_API_KEY'),env('KUCOIN_API_SECRET')*/);
+        $this->sdk = new \Lin\Ku\Kucoin(env('KUCOIN_API_KEY',''),env('KUCOIN_API_SECRET',''));
     }
 
     public function symbols(): array
@@ -31,17 +31,23 @@ class Kucoin extends Exchange
     public function orderBook(string $symbol): array
     {
         $data  = $this->sdk->market()->getOrderBookLevel2_20(['symbol'=>$this->normalize($symbol)])['data'];
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0][1],
-                'value'=>$data['asks'][0][0],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0][1],
-                'value'=>$data['bids'][0][0],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array

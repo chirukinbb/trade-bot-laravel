@@ -32,18 +32,24 @@ class Binance extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->depth($this->normalize($symbol),1);
+        $data = $this->sdk->depth($this->normalize($symbol),5);
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>($key = array_keys($data['asks'])[0]),
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>($key = array_keys($data['asks'])[$i]),
                 'value'=>$data['asks'][$key],
-            ],
-            'bid'=>[
-                'price'=>($key = array_keys($data['bids'])[0]),
+            ];
+            $book['bids'][] = [
+                'price'=>($key = array_keys($data['bids'])[$i]),
                 'value'=>$data['bids'][$key],
-            ],
-        ];
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol,float $lot, bool $isSell): array

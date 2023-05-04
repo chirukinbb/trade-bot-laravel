@@ -33,18 +33,24 @@ class OKX extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = (array)json_decode(file_get_contents('https://www.okx.com/api/v5/market/books?instId='.$this->normalize($symbol)))->data[0];
+        $data = (array)json_decode(file_get_contents('https://www.okx.com/api/v5/market/books?instId='.$this->normalize($symbol).'&sz=5'))->data[0];
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0][0],
-                'value'=>$data['asks'][0][1],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0][0],
-                'value'=>$data['bids'][0][1],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array

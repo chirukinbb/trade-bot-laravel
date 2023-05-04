@@ -11,7 +11,7 @@ class Bybit extends Exchange
 
     public function __construct()
     {
-        $this->sdk = new BybitSpot(/*env('BYBIT_API_KEY'),env('BYBIT_API_SECRET')*/);
+        $this->sdk = new BybitSpot(env('BYBIT_API_KEY',''),env('BYBIT_API_SECRET',''));
     }
 
     public function symbols(): array
@@ -32,18 +32,31 @@ class Bybit extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>1])['result'];
+        $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>5])['result'];
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0][0],
-                'value'=>$data['asks'][0][1],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0][0],
-                'value'=>$data['bids'][0][1],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
+    }
+
+    public function link(string $symbol)
+    {
+        $link = config('symbol.exchanges.'.$this->name.'link');
+
+        return str_replace('{symbol}',str_replace(':','/',$symbol),$link);
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array

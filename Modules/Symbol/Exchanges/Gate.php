@@ -11,7 +11,7 @@ class Gate extends Exchange
 
     public function __construct()
     {
-        $this->sdk = new GateSpotV2(/*env('GATE_API_KEY'),env('GATE_API_SECRET')*/);
+        $this->sdk = new GateSpotV2(env('GATE_API_KEY',''),env('GATE_API_SECRET',''));
     }
 
     public function symbols(): array
@@ -30,18 +30,24 @@ class Gate extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit=1'));
+        $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit=5'));
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0][0],
-                'value'=>$data['asks'][0][1],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0][0],
-                'value'=>$data['bids'][0][1],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array

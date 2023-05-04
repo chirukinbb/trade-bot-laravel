@@ -44,27 +44,26 @@ class ExchangeCommand extends Command
         foreach (config('symbol.exchanges') as $exchange => $data){
             $exchanges[$exchange] = new $data['adapter'];
         }
+        Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
+            $book = [];
+            $links = [];
 
-        Loop::addTimer(1,function ()use ($exchanges,$tgBot){
-            Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
-                $book = [];
-
-                foreach (config('symbol.exchanges') as $exchange => $data){
-                    /**
-                     * @var Exchange $exchanges[$exchange]
-                     */
-                    if ($exchanges[$exchange]->isSymbolOnline($symbol->name)){
-                        $book[$exchange] = $exchanges[$exchange]->orderBook($symbol->name);
-                    }
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                /**
+                 * @var Exchange $exchanges[$exchange]
+                 */
+                if ($exchanges[$exchange]->isSymbolOnline($symbol->name)){
+                    $book[$exchange] = $exchanges[$exchange]->orderBook($symbol->name);
+                    $links[$exchange] = $exchanges[$exchange]->link($symbol->name);
                 }
+            }
 
-                $trade = new Trade($symbol, $book);
+            $trade = new Trade($symbol, $book,$links);
 
-                $tgBot->sendMessage([
-                    'chat_id'=>env('TELEGRAM_CHAT_ID'),
-                    'text'=>$trade->message()
-                ]);
-            });
+            $tgBot->sendMessage([
+                'chat_id'=>env('TELEGRAM_CHAT_ID'),
+                'text'=>$trade->message()
+            ]);
         });
     }
 }

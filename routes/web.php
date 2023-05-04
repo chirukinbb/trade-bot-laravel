@@ -10,6 +10,8 @@ use Lin\Ku\Kucoin;
 use Lin\Mxc\MxcSpot;
 use Lin\Okex\OkexSpot;
 use Modules\Symbol\Entities\Symbol;
+use Modules\Symbol\Exchanges\Exchange;
+use Modules\Trader\Entities\Trade;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +24,6 @@ use Modules\Symbol\Entities\Symbol;
 |
 */
 
-Route::get('ex',function (){/*
-*/
+Route::get('ex',function (){
+    Artisan::call('trader:exchanges');
 });

@@ -17,4 +17,11 @@ abstract class Exchange
 
         return  config('symbol.exchanges.'.$this->name.'.lowercase') ? strtolower($symbol) : $symbol;
     }
+
+    public function link(string $symbol)
+    {
+        $link = config('symbol.exchanges.'.$this->name.'link');
+
+        return str_replace('{symbol}',$this->normalize($symbol),$link);
+    }
 }

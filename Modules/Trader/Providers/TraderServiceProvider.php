@@ -4,6 +4,7 @@ namespace Modules\Trader\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Modules\Trader\Console\Commands\ExchangeCommand;
 
 class TraderServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,7 @@ class TraderServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
+        $this->commands([ExchangeCommand::class]);
     }
 
     /**

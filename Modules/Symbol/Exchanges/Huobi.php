@@ -11,7 +11,7 @@ class Huobi extends Exchange
 
     public function __construct()
     {
-        $this->sdk  = new HuobiSpot(/*env('HUOBI_API_KEY'),env('HUOBI_API_SECRET')*/);
+        $this->sdk  = new HuobiSpot(env('HUOBI_API_KEY',''),env('HUOBI_API_SECRET',''));
     }
 
     public function symbols(): array
@@ -33,17 +33,23 @@ class Huobi extends Exchange
     public function orderBook(string $symbol): array
     {
         $data = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>5])['tick'];
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0][0],
-                'value'=>$data['asks'][0][1],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0][0],
-                'value'=>$data['bids'][0][1],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array

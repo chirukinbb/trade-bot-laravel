@@ -32,18 +32,24 @@ class Mexc extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>1])['data'];
+        $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>5])['data'];
+        $book = [];
+        $i = 0;
 
-        return [
-            'ask'=>[
-                'price'=>$data['asks'][0]['price'],
-                'value'=>$data['asks'][0]['quantity'],
-            ],
-            'bid'=>[
-                'price'=>$data['bids'][0]['price'],
-                'value'=>$data['bids'][0]['quantity'],
-            ],
-        ];
+        while ($i < count($data['asks'])){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i]['price'],
+                'value'=>$data['asks'][$i]['quantity'],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['asks'][$i]['price'],
+                'value'=>$data['asks'][$i]['quantity'],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 
     public function sendOrder(string $symbol, float $lot, bool $isSell): array
