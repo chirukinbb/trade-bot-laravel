@@ -3,5 +3,7 @@
     "Quotation": true,
     "Deal": true,
     "Symbol": true,
-    "Trader": true
+    "Trader": true,
+    "Dashboard": true,
+    "Settings": true
 }

@@ -54,7 +54,7 @@ class Bybit extends Exchange
 
     public function link(string $symbol)
     {
-        $link = config('symbol.exchanges.'.$this->name.'link');
+        $link = config('symbol.exchanges.'.$this->name.'.link');
 
         return str_replace('{symbol}',str_replace(':','/',$symbol),$link);
     }

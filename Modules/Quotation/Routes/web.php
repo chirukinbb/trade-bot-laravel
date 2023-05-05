@@ -11,6 +11,6 @@
 |
 */
 
-Route::prefix('quotation')->group(function() {
-    Route::get('/', 'QuotationController@index');
-});
+use Illuminate\Support\Facades\Route;
+
+Route::get('signals', 'PageController@index')->middleware('auth')->name('signals');

@@ -291,15 +291,15 @@ return [
 
     'menu' => [
         [
-            'url'         => '/deal/index',
-            'text'         => 'Deals',
+            'url'         => '/dashboard',
+            'text'         => 'Dashboard',
         ],
         [
             'url'         => '/symbols',
             'text'         => 'Symbols',
         ],
         [
-            'url'         => '/signal/list',
+            'url'         => '/signals',
             'text'         => 'Signals',
         ],
         [

@@ -43,7 +43,7 @@ class Trade
 📈Продажа:
 Объем: '.$this->baseCoinSellVolume().' -> '.$this->quoteCoinSellVolume().'
 Цена: '.$this->quoteCoinSellPrice().'
-Профит: '.$this->baseCoinProfit().'
+Профит: '.$this->quoteCoinProfit().'
 Спред: '.$this->spread().'
 📤Вывод:
 ✅ '.$this->buyExchangeTitle(false).' | ✅ '.$this->sellExchangeTitle(false);
@@ -51,31 +51,19 @@ class Trade
 
     private function calculatePricesAndVolumes(string $direction)
     {
-        $restVolume = $this->sell['total']['volume'];
-        $this->sell['total']['quote'] = 0;
+        $restVolume = $this->{$direction}['total']['volume'];
+        $this->{$direction}['total']['quote'] = 0;
         $i = 0;
 
         while ($restVolume > 0){
-            if (isset($this->sell['book'][$i])){
-                $volume = min($restVolume,$this->sell['book'][$i]['volume']);
+            if (isset($this->{$direction}['book'][$i])){
+                $volume = min($restVolume,$this->{$direction}['book'][$i]['value']);
                 $restVolume -= $volume;
-                $this->sell['total']['quote'] += $volume * $this->sell['book'][$i]['price'];
+                $this->{$direction}['total']['quote'] += $volume * $this->{$direction}['book'][$i]['price'];
+                $this->{$direction}['total']['price']['end'] = $this->{$direction}['book'][$i]['price'];
             }
 
             $i++;
-        }
-
-        if (($rest = $this->{$direction}['volume'] - $this->orderBook[$this->{$direction}['exchange']]['asks'][0]['value']) > 0){
-            $i = count($this->orderBook[$this->{($direction === 'sell') ? 'buy' : 'sell'}['exchange']]['bids']);
-
-            while ($rest > 0){
-                if ($this->orderBook[$this->{($direction === 'sell') ? 'buy' : 'sell'}['exchange']]['bids'][$i]['price'] > $this->{$direction}['price']['start']) {
-                    $rest -= $this->orderBook[$this->{($direction === 'sell') ? 'buy' : 'sell'}['exchange']]['bids'][$i]['value'];
-                    $this->{$direction}['price']['end'] = $this->orderBook[$this->{($direction === 'sell') ? 'buy' : 'sell'}['exchange']]['bids'][$i]['price'];
-                }
-
-                $i++;
-            }
         }
     }
 
@@ -83,7 +71,7 @@ class Trade
     {
         $this->{$direction}['book'] = array_merge(
             $this->{$direction}['book'],
-            $this->orderBook[$this->{$direction}['exchange'][($direction === 'sell') ? 'bids' : 'asks']]
+            $this->orderBook[$this->{$direction}['exchange']][($direction === 'sell') ? 'bids' : 'asks']
         );
         $this->{$direction}['total'] = [
             'volume'=>0,
@@ -91,11 +79,11 @@ class Trade
         ];
 
         foreach ($this->{$direction}['book'] as $book) {
-            $result = ($direction === 'sell') ? $this->{$direction}['book'][0]['price'] <= $book['price']
-                : $this->{$direction}['book'][0]['price'] >= $book['price'];
+            $result = ($direction === 'sell') ? $this->{$direction}['book'][0]['price'] >= $book['price']
+                : $this->{$direction}['book'][0]['price'] <= $book['price'];
 
             if ($result) {
-                $this->{$direction}['total']['volume'] += $book['volume'];
+                $this->{$direction}['total']['volume'] += $book['value'];
             }else{
                 $index = array_search($book,$this->{$direction}['book']);
                 unset($this->{$direction}['book'][$index]);
@@ -118,7 +106,6 @@ class Trade
                 $this->{$direction} = [
                     'exchange' => $exchange,
                     'book' => [$book[($direction === 'sell') ? 'asks' : 'bids'][0]]
-
                 ];
             }
         }
@@ -126,14 +113,14 @@ class Trade
 
     private function buyExchangeTitle(bool $wrap = true)
     {
-        return $wrap ? $this->linkWrap('buy',config('symbol.exchanges.'.$this->buy['exchange'].'.label'))
-            : config('symbol.exchanges.'.$this->buy['exchange'].'.label');
+        return $wrap ? $this->linkWrap('buy',config('symbol.exchanges.'.$this->buy['exchange'].'.title'))
+            : config('symbol.exchanges.'.$this->buy['exchange'].'.title');
     }
 
     private function sellExchangeTitle(bool $wrap = true)
     {
-        return $wrap ? $this->linkWrap('sell',config('symbol.exchanges.'.$this->buy['exchange'].'.label'))
-            : config('symbol.exchanges.'.$this->sell['exchange'].'.label');
+        return $wrap ? $this->linkWrap('sell',config('symbol.exchanges.'.$this->sell['exchange'].'.title'))
+            : config('symbol.exchanges.'.$this->sell['exchange'].'.title');
     }
 
     private function linkWrap(string $direction, string $anchor)
@@ -143,43 +130,51 @@ class Trade
         return '<a href="'.$this->links[$key].'">'.$anchor.'</a>';
     }
 
-    private function baseCoinBuyPrice()
+    public function baseCoinBuyPrice(bool $isArray = false)
     {
-        return $this->buy['total']['price']['start'].' - '.$this->buy['total']['price']['end'].$this->symbol[0];
+        if ($isArray){
+            return [$this->buy['total']['price']['start'],$this->buy['total']['price']['end']];
+        }
+
+        return $this->buy['total']['price']['start'].' - '.$this->buy['total']['price']['end'].' '.$this->symbol[0];
     }
 
-    private function baseCoinBuyVolume(bool $withSymbol = true)
+    public function baseCoinBuyVolume(bool $withSymbol = true)
     {
-        return $this->buy['total']['volume'].($withSymbol ? $this->symbol[1] : '');
+        return $this->buy['total']['volume'].($withSymbol ? ' '.$this->symbol[0] : '');
     }
 
-    private function quoteCoinBuyVolume(bool $withSymbol = true)
+    public function quoteCoinBuyVolume(bool $withSymbol = true)
     {
-        return $this->buy['total']['quote'].($withSymbol ? $this->symbol[1] : '');
+        return $this->buy['total']['quote'].($withSymbol ? ' '.$this->symbol[1] : '');
     }
 
-    private function quoteCoinSellVolume(bool $withSymbol = true)
+    public function quoteCoinSellVolume(bool $withSymbol = true)
     {
-        return $this->sell['total']['quote'].($withSymbol ? $this->symbol[1] : '');
+        return $this->sell['total']['quote'].($withSymbol ? ' '.$this->symbol[1] : '');
     }
 
-    private function baseCoinSellVolume(bool $withSymbol = true)
+    public function baseCoinSellVolume(bool $withSymbol = true)
     {
-        return $this->sell['total']['volume'].($withSymbol ? $this->symbol[1] : '');
+        return $this->sell['total']['volume'].($withSymbol ? ' '.$this->symbol[0] : '');
     }
 
-    private function quoteCoinSellPrice()
+    public function quoteCoinSellPrice(bool $isArray = false)
     {
-        return $this->buy['total']['price']['start'].' - '.$this->buy['total']['price']['end'].$this->symbol[0];
+        if ($isArray){
+            return [$this->buy['total']['price']['start'],$this->buy['total']['price']['end']];
+        }
+
+        return $this->buy['total']['price']['start'].' - '.$this->buy['total']['price']['end'].' '.$this->symbol[1];
     }
 
-    private function baseCoinProfit()
+    public function quoteCoinProfit()
     {
-        return ($this->quoteCoinBuyVolume(false) - $this->quoteCoinSellPrice()).$this->symbol[1];
+        return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)),8).' '.$this->symbol[1];
     }
 
-    private function spread()
+    public function spread()
     {
-        return ($this->quoteCoinBuyVolume(false) - $this->quoteCoinSellVolume(false)) * 100 / $this->quoteCoinSellVolume(false);
+        return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)) * 100 / $this->quoteCoinBuyVolume(false),3).'%';
     }
 }

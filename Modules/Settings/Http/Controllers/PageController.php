@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Quotation\Http\Controllers;
+namespace Modules\Settings\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
-class QuotationController extends Controller
+class PageController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,7 @@ class QuotationController extends Controller
      */
     public function index()
     {
-        return view('quotation::index');
+        return view('settings::index');
     }
 
     /**
@@ -23,7 +23,7 @@ class QuotationController extends Controller
      */
     public function create()
     {
-        return view('quotation::create');
+        return view('settings::create');
     }
 
     /**
@@ -43,7 +43,7 @@ class QuotationController extends Controller
      */
     public function show($id)
     {
-        return view('quotation::show');
+        return view('settings::show');
     }
 
     /**
@@ -53,7 +53,7 @@ class QuotationController extends Controller
      */
     public function edit($id)
     {
-        return view('quotation::edit');
+        return view('settings::edit');
     }
 
     /**

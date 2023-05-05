@@ -23,7 +23,3 @@ use Modules\Trader\Entities\Trade;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('ex',function (){
-    Artisan::call('trader:exchanges');
-});
