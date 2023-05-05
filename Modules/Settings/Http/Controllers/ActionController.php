@@ -13,6 +13,9 @@ class ActionController extends Controller
         $this->setEnv('SECONDS_DELAY',$request->delay);
         $this->setEnv('TARGET_SPREAD',$request->spread);
 
+        exec('sudo systemctl stop supervisord.service');
+        exec('sudo systemctl start supervisord.service');
+
         return redirect()->back();
     }
 

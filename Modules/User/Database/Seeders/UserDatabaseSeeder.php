@@ -19,9 +19,9 @@ class UserDatabaseSeeder extends Seeder
         Model::unguard();
 
         User::create([
-            'name'=>'Bogdan',
-            'email'=>'chirukin@arbitr.com',
-            'password'=>Hash::make('rthhtr6')
+            'name'=>'Igor',
+            'email'=>'igor@arbitr.com',
+            'password'=>Hash::make('ff5h;ltna2')
         ]);
     }
 }
