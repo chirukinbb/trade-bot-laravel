@@ -54,8 +54,6 @@ class Binance extends Exchange
 
     public function sendOrder(array $data): array
     {
-        $symbol = $this->normalize($symbol);
-
-        return $isSell ? $this->sdk->marketSell($symbol,$lot) : $this->sdk->marketBuy($symbol,$lot);
+        return [];
     }
 }

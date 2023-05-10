@@ -52,8 +52,8 @@ class Mexc extends Exchange
         return $book;
     }
 
-    public function sendOrder(string $symbol, float $lot, bool $isSell): array
+    public function sendOrder(array $data): array
     {
-        // TODO: Implement sendOrder() method.
+        return [];
     }
 }

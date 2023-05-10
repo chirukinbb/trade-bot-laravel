@@ -14,7 +14,7 @@ class SymbolRequest extends FormRequest
     {
         return [
             'symbol'=>'string|required',
-            'volume'=>'number'
+            'volume'=>'numeric'
             ];
     }
 }

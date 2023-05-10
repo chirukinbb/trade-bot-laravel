@@ -59,8 +59,8 @@ class Bybit extends Exchange
         return str_replace('{symbol}',str_replace(':','/',$symbol),$link);
     }
 
-    public function sendOrder(string $symbol, float $lot, bool $isSell): array
+    public function sendOrder(array $data): array
     {
-        // TODO: Implement sendOrder() method.
+        return [];
     }
 }

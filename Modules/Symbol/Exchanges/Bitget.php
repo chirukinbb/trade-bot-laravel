@@ -52,8 +52,8 @@ class Bitget extends Exchange
         return $book;
     }
 
-    public function sendOrder(string $symbol, float $lot, bool $isSell): array
+    public function sendOrder(array $data): array
     {
-        return $this->sdk->order()->post();
+        return [];
     }
 }

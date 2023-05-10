@@ -12,5 +12,5 @@
 
 @section('js')
     <script src="{{asset('js/chunk-vendors.72034549.js')}}"></script>
-    <script src="{{asset('js/app.37066207.js')}}"></script>
+    <script src="{{asset('js/app.915c9129.js')}}"></script>
 @endsection
