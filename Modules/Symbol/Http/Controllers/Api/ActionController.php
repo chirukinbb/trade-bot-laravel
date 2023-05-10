@@ -40,7 +40,10 @@ class ActionController extends Controller
             $exchanges = [];
 
             foreach ($symbols as $exchange => $sym) {
-                $exchanges[$exchange] = in_array($symbol,$sym);
+                $exchanges[$exchange] = [
+                    'title'=>config('symbol.exchanges.'.$exchange.'.title'),
+                    'enabled'=>in_array($symbol,$sym)
+                ];
             }
 
             $data[] = [
@@ -50,12 +53,15 @@ class ActionController extends Controller
             ];
         }
 
-        return response()->json($data);
+        return response()->json(compact('data'));
     }
 
     public function store(SymbolRequest $request)
     {
-        Symbol::updateOrCreate(['name'=>$request->symbol]);
+        Symbol::updateOrCreate([
+            'name'=>$request->symbol,
+            'volume'=>$request->volume
+        ]);
 
         return response()->json(1);
     }
@@ -65,70 +71,5 @@ class ActionController extends Controller
         Symbol::whereName($request->symbol)->delete();
 
         return response()->json(1);
-    }
-
-    private function getGateSymbols()
-    {
-        $gate = new GateSpotV2();
-
-        return array_map(function ($symbol) {
-            return str_replace('_',':',strtoupper($symbol));
-        }, $gate->publics()->pairs());
-    }
-
-    private function getMexcSymbols()
-    {
-        $mxc  = new MxcSpot();
-
-        return array_map(function ($symbol) {
-            return str_replace('_',':',$symbol['symbol']);
-        }, $mxc->market()->getSymbols()['data']);
-    }
-
-    private function getOKXSymbols()
-    {
-        $symbols = json_decode(\Illuminate\Support\Facades\Http::get('https://www.okx.com/api/v5/public/instruments?instType=SPOT')->body());
-
-        return array_map(function ($symbol) {
-            $symbol = (array)$symbol;
-            return $symbol['baseCcy'].':'.$symbol['quoteCcy'];
-        }, (array)$symbols->data);
-    }
-
-    private function getKucoinSymbols()
-    {
-        $kucoin  = new Kucoin();
-
-        return array_map(function ($symbol) {
-            return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, $kucoin->market()->getSymbols()['data']);
-    }
-
-    private function getBybitSymbols()
-    {
-        $bybit = new BybitSpot();
-
-        return array_map(function ($symbol) {
-            return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, $bybit->publics()->getSymbols()['result']);
-    }
-
-    private function getHuobiSymbols()
-    {
-        $huobiSymbols = json_decode(\Illuminate\Support\Facades\Http::get('https://api.huobi.pro/v1/common/symbols')->body());
-
-        return array_map(function ($symbol) {
-            $symbol = (array)$symbol;
-            return strtoupper($symbol['base-currency'].':'.$symbol['quote-currency']);
-        }, $huobiSymbols->data);
-    }
-
-    private function getBinanceSymbols()
-    {
-        $binance = new Binance();
-
-        return array_map(function ($symbol) {
-            return $symbol['baseAsset'].':'.$symbol['quoteAsset'];
-        }, $binance->system()->getExchangeInfo()['symbols']);
     }
 }

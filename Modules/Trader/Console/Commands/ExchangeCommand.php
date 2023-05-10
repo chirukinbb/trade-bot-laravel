@@ -32,7 +32,7 @@ class ExchangeCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Main robot command';
+    protected $description = ' robot command';
 
     /**
      * Execute the console command.

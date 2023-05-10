@@ -40,8 +40,8 @@ class Gate extends Exchange
                 'value'=>$data['asks'][$i][1],
             ];
             $book['bids'][] = [
-                'price'=>$data['asks'][$i][0],
-                'value'=>$data['asks'][$i][1],
+                'price'=>$data['bids'][$i][0],
+                'value'=>$data['bids'][$i][1],
             ];
 
             $i++;

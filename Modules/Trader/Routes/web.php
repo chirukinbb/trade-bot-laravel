@@ -12,7 +12,4 @@
 */
 
 Route::prefix('trader')->group(function() {
-    Route::get('/', function (){
-        dd(config('symbol'));
-    });
 });

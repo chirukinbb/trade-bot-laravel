@@ -52,7 +52,7 @@ class Binance extends Exchange
         return $book;
     }
 
-    public function sendOrder(string $symbol,float $lot, bool $isSell): array
+    public function sendOrder(array $data): array
     {
         $symbol = $this->normalize($symbol);
 

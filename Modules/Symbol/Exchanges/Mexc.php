@@ -42,8 +42,8 @@ class Mexc extends Exchange
                 'value'=>$data['asks'][$i]['quantity'],
             ];
             $book['bids'][] = [
-                'price'=>$data['asks'][$i]['price'],
-                'value'=>$data['asks'][$i]['quantity'],
+                'price'=>$data['bids'][$i]['price'],
+                'value'=>$data['bids'][$i]['quantity'],
             ];
 
             $i++;

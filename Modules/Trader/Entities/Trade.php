@@ -2,6 +2,8 @@
 
 namespace Modules\Trader\Entities;
 
+use function Webmozart\Assert\Tests\StaticAnalysis\object;
+
 class Trade
 {
     private array $sell;
@@ -15,17 +17,14 @@ class Trade
     )
     {
         $this->symbol = explode(':',$symbol);
-
         // биржи с лучшим предложением
         foreach ($this->orderBook as $exchange => $book){
             $this->setBetterPrice($exchange,$book,'sell');
             $this->setBetterPrice($exchange,$book,'buy');
         }
-
         // установка книги ордеров с противоположной биржы
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
-
         // сведение к минимальному обьему
         $this->buy['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']);
         $this->sell['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']);
@@ -47,6 +46,16 @@ class Trade
 Спред: '.$this->spread().'
 📤Вывод:
 ✅ '.$this->buyExchangeTitle(false).' | ✅ '.$this->sellExchangeTitle(false);
+    }
+
+    public function buy()
+    {
+        return $this->buy;
+    }
+
+    public function sell()
+    {
+        return $this->sell;
     }
 
     private function calculatePricesAndVolumes(string $direction)
@@ -83,7 +92,7 @@ class Trade
                 : $this->{$direction}['book'][0]['price'] <= $book['price'];
 
             if ($result) {
-                $this->{$direction}['total']['volume'] += $book['value'];
+                $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
             }else{
                 $index = array_search($book,$this->{$direction}['book']);
                 unset($this->{$direction}['book'][$index]);

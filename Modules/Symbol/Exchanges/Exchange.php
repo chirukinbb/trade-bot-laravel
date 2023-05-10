@@ -9,7 +9,7 @@ abstract class Exchange
     abstract public function symbols(): array;
     abstract public function isSymbolOnline(string $symbol): bool;
     abstract public function orderBook(string $symbol): array;
-    abstract public function sendOrder(string $symbol,float $lot, bool $isSell): array;
+    abstract public function sendOrder(array $data): array;
 
     protected function normalize(string $symbol):string
     {

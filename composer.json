@@ -13,6 +13,7 @@
         "laravel/framework": "^10.8",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
+        "laravel/ui": "^4.2",
         "linwj/binance": "^2.2",
         "linwj/bitget": "^1.0",
         "linwj/bybit": "^1.0",

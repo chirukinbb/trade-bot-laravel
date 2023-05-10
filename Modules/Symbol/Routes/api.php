@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth:sanctum','ability:user'])->as('symbol::')->prefix('symbol')->group(function () {
+    Route::get('/',[\Modules\Symbol\Http\Controllers\Api\ActionController::class,'symbols'])->name('index');
     Route::get('list',[\Modules\Symbol\Http\Controllers\Api\ActionController::class,'symbols'])->name('symbols');
     Route::post('add',[\Modules\Symbol\Http\Controllers\Api\ActionController::class,'store'])->name('store');
     Route::post('delete',[\Modules\Symbol\Http\Controllers\Api\ActionController::class,'delete'])->name('delete');

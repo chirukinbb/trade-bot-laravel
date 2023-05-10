@@ -6,11 +6,15 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @property-read $symbol
+ * @property-read $volume
  */
 class SymbolRequest extends FormRequest
 {
     public function rules()
     {
-        return ['symbol'=>'string|required'];
+        return [
+            'symbol'=>'string|required',
+            'volume'=>'number'
+            ];
     }
 }
