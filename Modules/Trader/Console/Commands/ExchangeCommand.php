@@ -43,21 +43,22 @@ class ExchangeCommand extends Command
         $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
 
         foreach (config('symbol.exchanges') as $exchange => $data){
-            $exchanges[$exchange] = new $data['adapter'];
+            $exchanges[$exchange] = ['adapter'=>new $data['adapter']];
         }
 
-        Loop::addPeriodicTimer(env('SECONDS_DELAY'),function () use ($exchanges,$tgBot){
+        Loop::addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($exchanges,$tgBot){
             Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
                 $book = [];
                 $links = [];
 
                 foreach (config('symbol.exchanges') as $exchange => $data){
-                    /**
-                     * @var Exchange $exchanges[$exchange]
-                     */
-                    if ($exchanges[$exchange]->isSymbolOnline($symbol->name)){
-                        $book[$exchange] = $exchanges[$exchange]->orderBook($symbol->name);
-                        $links[$exchange] = $exchanges[$exchange]->link($symbol->name);
+                    $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
+                }
+
+                foreach (config('symbol.exchanges') as $exchange => $data){
+                    if ($exchanges[$exchange]['is_online']) {
+                        $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
+                        $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
                     }
                 }
 

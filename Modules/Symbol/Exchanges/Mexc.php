@@ -54,6 +54,30 @@ class Mexc extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $data = $this->sdk->order()->postPlace([
+            'symbol'=>$data['symbol'],
+            'trade_type'=>$data['side'] === 'sell' ? 'ASK' : 'BID',
+            'order_type'=>'LIMIT_ORDER',
+            'quantity'=> $data['volume'],
+            'price'=>$data['total']['price']['end']
+        ]);
+
+        return $data['data'];
+    }
+
+    public function order(array $data)
+    {
+        $order = $this->sdk->order()->getDealDetail(['order_id'=>$data['id']]);
+        $openOrders = $this->sdk->order()->getOpenOrders(['symbol'=>$data['symbol']]);
+        $openOrderIds = array_map(function ($order){
+            return $order['id'];
+        },$openOrders['data']);
+
+        return [
+            'volume'=>$order['quantity'],
+            'price'=>$order['price'],
+            'side'=>$data['trade_type'],
+            'status'=>in_array($data['id'],$openOrderIds) ? 'Open' : 'Close',
+        ];
     }
 }

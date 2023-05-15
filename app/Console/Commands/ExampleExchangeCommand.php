@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Quotation\Entities\Signal;
+use Modules\Symbol\Entities\Symbol;
 use Modules\Symbol\Exchanges\Exchange;
 use Modules\Trader\Entities\Trade;
+use React\EventLoop\Loop;
 use function env;
 
 class ExampleExchangeCommand extends Command
@@ -29,22 +32,47 @@ class ExampleExchangeCommand extends Command
     public function handle()
     {
         $exchanges = [];
-        ;$symbol='BTC:USDT';
+        $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
 
         foreach (config('symbol.exchanges') as $exchange => $data){
-            $exchanges[$exchange] = new $data['adapter'];
+            $exchanges[$exchange] = ['adapter'=>new $data['adapter']];
         }
 
-        foreach (config('symbol.exchanges') as $exchange => $data){
-            /**
-             * @var Exchange $exchanges[$exchange]
-             */
-            if ($exchanges[$exchange]->isSymbolOnline($symbol)){
-                $book[$exchange] = $exchanges[$exchange]->orderBook($symbol);
-                $links[$exchange] = $exchanges[$exchange]->link($symbol);
+        Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
+            $book = [];
+            $links = [];
+
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
             }
-        }
 
-        $trade = new Trade('TCC:USD', $book,$links);
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                if ($exchanges[$exchange]['is_online']) {
+                    $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
+                    $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
+                }
+            }
+
+            $trade = new Trade($symbol->name, $book,$links);
+
+            if (true/*$trade->spread() > env('TARGET_SPREAD')*/) {
+                $signal = Signal::getModel();
+
+                $signal->base_coin = explode(':', $symbol->name)[0];
+                $signal->quote_coin = explode(':', $symbol->name)[1];
+                $signal->buy_prices = $trade->baseCoinBuyPrice(true);
+                $signal->sell_prices = $trade->quoteCoinSellPrice(true);
+                $signal->sell_volumes = [$trade->baseCoinSellVolume(false), $trade->quoteCoinSellVolume(false)];
+                $signal->buy_volumes = [$trade->baseCoinBuyVolume(false), $trade->quoteCoinBuyVolume(false)];
+
+                $signal->save();
+
+                $tgBot->sendMessage([
+                    'chat_id' => env('TELEGRAM_CHAT_ID'),
+                    'text' => $trade->message(),
+                    'parse_mode' => 'HTML'
+                ]);
+            }
+        });
     }
 }

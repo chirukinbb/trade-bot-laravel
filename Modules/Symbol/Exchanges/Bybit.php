@@ -2,6 +2,7 @@
 
 namespace Modules\Symbol\Exchanges;
 
+use Illuminate\Support\Facades\Http;
 use Lin\Bybit\BybitSpot;
 
 class Bybit extends Exchange
@@ -61,6 +62,44 @@ class Bybit extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $body = [
+            'symbol'=>$data['symbol'],
+            'qty'=>$data['volume'],
+            'side'=>$data['side'],
+            'orderType'=>'Market',
+            'timeInForce'=>'GoodTillCancel'
+        ];
+
+        $data = Http::withHeaders($body)
+        ->post('https://api-testnet.bybit.com/unified/v3/order/create',$body);
+
+        return json_decode($data->body())->orderId;
+    }
+
+    public function order(array $data)
+    {
+        $data = json_decode(Http::withHeaders($this->headers([]))
+        ->get('https://api-testnet.bybit.com/unified/v3/order/',[
+            'symbol'=>$data['symbol'],
+            'orderId'=>$data['orderId']
+        ])->body(),true);
+
+        return [
+            'volume'=>$data['result']['list'][0]['qty'],
+            'price'=>$data['result']['list'][0]['price'],
+            'side'=>$data['result']['list'][0]['side'],
+            'status'=>$data['result']['list'][0]['orderStatus'],
+        ];
+    }
+
+    private function headers($body)
+    {
+        return [
+            'X-BAPI-SIGN-TYPE'=>2,
+            'X-BAPI-SIGN'=>hash_hmac('sha256',http_build_query($body),env('BYBIT_API_SECRET')),
+            'BAPI-API-KEY'=>env('BYBIT_API_KEY'),
+            'X-BAPI-TIMESTAMP'=>now()->timestamp*1000,
+            'X-BAPI-RECV-WINDOW'=>5000
+        ];
     }
 }

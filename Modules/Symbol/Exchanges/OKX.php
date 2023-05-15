@@ -55,6 +55,8 @@ class OKX extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $data = $this->sdk->order()->post([
+
+        ]);
     }
 }

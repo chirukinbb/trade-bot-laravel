@@ -2,16 +2,13 @@
 
 namespace Modules\Settings\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Env;
 
 class ActionController extends Controller
 {
     public function save(Request $request)
     {
-        $this->setEnv('SECONDS_DELAY',$request->delay);
-        $this->setEnv('TARGET_SPREAD',$request->spread);
+        $this->setEnv($request->all());
 
         exec('sudo systemctl stop supervisord.service');
         exec('sudo systemctl start supervisord.service');
@@ -19,21 +16,23 @@ class ActionController extends Controller
         return redirect()->back();
     }
 
-    private function setEnv(string $name, int $variable)
+    private function setEnv(array $envs)
     {
-        // Читаем файл в строку
         $content = file_get_contents(base_path('.env'));
-// Проверяем, удалось ли прочитать файл
+        $envFields = array_merge(array_keys($envs),['IS_TRADING_ENABLED']);
+
         if ($content !== false) {
             $strings = [];
             // Разбиваем строку на массив строк по символу переноса строки
             $lines = explode("\n", $content);
             // Выводим каждую строку на экран
             foreach ($lines as $line) {
-                if (str_contains($line,$name)){
-                    $strings[] = $name.'='.$variable;
+                $line = explode('=',$line);
+
+                if (in_array($line[0],$envFields)){
+                    $strings[] = $line[0].'="'.$envs[$line[0]].'"';
                 }else{
-                    $strings[] = $line;
+                    $strings[] = implode('=',$line);
                 }
             }
             file_put_contents(base_path('.env'),implode(PHP_EOL,$strings));

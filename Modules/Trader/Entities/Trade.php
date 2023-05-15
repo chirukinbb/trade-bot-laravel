@@ -88,8 +88,8 @@ class Trade
         ];
 
         foreach ($this->{$direction}['book'] as $book) {
-            $result = ($direction === 'sell') ? $this->{$direction}['book'][0]['price'] >= $book['price']
-                : $this->{$direction}['book'][0]['price'] <= $book['price'];
+            $result = ($direction === 'sell') ? ($this->{$direction}['book'][0]['price'] >= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] < $book['price'])
+                : ($this->{$direction}['book'][0]['price'] <= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] > $book['price']);
 
             if ($result) {
                 $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
@@ -184,6 +184,6 @@ class Trade
 
     public function spread()
     {
-        return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)) * 100 / $this->quoteCoinBuyVolume(false),3).'%';
+        return number_format(($this->sell['book'][0]['price'] - $this->buy['book'][0]['price']) * 100 / $this->sell['book'][0]['price'],3).'%';
     }
 }

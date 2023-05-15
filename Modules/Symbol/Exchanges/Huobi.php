@@ -2,6 +2,7 @@
 
 namespace Modules\Symbol\Exchanges;
 
+use Illuminate\Support\Facades\Http;
 use Lin\Huobi\HuobiSpot;
 
 class Huobi extends Exchange
@@ -54,6 +55,36 @@ class Huobi extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $accounts = $this->sdk->account()->get()['data'];
+        $accountID = 0;
+
+        foreach ($accounts as $account){
+            if ($accounts['state'] === 'working' && $account['type'] === 'margin'){
+                $accountID = $account['id'];
+            }
+        }
+
+        $data = $this->sdk->order()->postPlace([
+            'symbol'=>$data['symbol'],
+            'amount'=> $data['volume'],
+            'type'=>$data['side'].'-market',
+            'account-id'=>$accountID,
+            'price'=>$data['total']['price']['end']
+        ]);
+
+        return $data['data'];
+    }
+
+    public function order(array $data)
+    {
+        $order = $this->sdk->order()->get(['orderId'=>$data['id']]);
+        $side = explode('-',$order['type']);
+
+        return [
+            'volume'=>$order['amount'],
+            'price'=>$order['price'],
+            'side'=>$side[0],
+            'status'=>$order['state'],
+        ];
     }
 }

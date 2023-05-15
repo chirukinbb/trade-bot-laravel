@@ -52,6 +52,29 @@ class Kucoin extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $data = $this->sdk->order()->post([
+            'symbol'=>$data['symbol'],
+            'size'=> $data['volume'],
+            'type'=>'market',
+            'side'=>$data['side'],
+            'price'=>$data['total']['price']['end']
+        ]);
+
+        return $data['orderId'];
+    }
+
+    public function order(array $data)
+    {
+        $order = $this->sdk->order()->get([
+            'orderId'=>$data['id'],
+            'symbol'=>$data['symbol']
+        ]);
+
+        return [
+            'volume'=>$order['size'],
+            'price'=>$order['price'],
+            'side'=>$order['side'],
+            'status'=>$order['active'],
+        ];
     }
 }

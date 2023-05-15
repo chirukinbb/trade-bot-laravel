@@ -17,7 +17,7 @@ return [
             'lowercase'=>false,
             'adapter'=>\Modules\Symbol\Exchanges\Bitget::class,
             'link'=>'https://www.bitget.com/en/spot/{symbol}?type=cross',
-            'suffix'=>'_SPBL'
+            'suffix'=>'_UMCBL'
         ],
         'huobi'=>[
             'title' =>'Huobi',

@@ -3,6 +3,7 @@
 namespace Modules\Symbol\Exchanges;
 
 use Binance\API;
+use Illuminate\Support\Facades\Http;
 
 class Binance extends Exchange
 {
@@ -16,9 +17,13 @@ class Binance extends Exchange
 
     public function symbols(): array
     {
+        $symbols = array_filter($this->sdk->exchangeInfo()['symbols'],function ($symbol){
+            return in_array('MARGIN',$symbol['permissions']);
+        });
+
         return array_map(function ($symbol) {
             return $symbol['baseAsset'].':'.$symbol['quoteAsset'];
-        }, $this->sdk->exchangeInfo()['symbols']);
+        }, $symbols);
     }
 
     public function isSymbolOnline(string $symbol): bool
@@ -32,7 +37,7 @@ class Binance extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->depth($this->normalize($symbol),5);
+        $data = $this->sdk->depth($this->normalize($symbol),10);
         $book = [];
         $i = 0;
 
@@ -54,6 +59,31 @@ class Binance extends Exchange
 
     public function sendOrder(array $data): array
     {
-        return [];
+        $data = Http::post('https://testnet.binance.vision/sapi/v1/margin/order',[
+            'symbol'=>$data['symbol'],
+            'quantity'=>$data['volume'],
+            'side'=>$data['side'],
+            'type'=>'MARKET',
+            'timestamp'=>now()->timestamp,
+            'signature'=>hash_hmac('sha256',http_build_query($data),env('BINANCE_API_SECRET'))
+        ]);
+
+        return json_decode($data->body())->orderId;
+    }
+
+    public function order(array $data)
+    {
+        $data = json_decode(Http::post('https://testnet.binance.vision/api/v3/order',[
+            'symbol'=>$data['symbol'],
+            'orderId'=>$data['orderId'],
+            'timestamp'=>now()->timestamp,
+            'signature'=>hash_hmac('sha256',http_build_query($data),env('BINANCE_API_SECRET'))
+        ])->body(),true);
+
+        return [
+            'volume'=>$data['origQty'],
+            'price'=>$data['price'],
+            'side'=>$data['side']
+        ];
     }
 }
