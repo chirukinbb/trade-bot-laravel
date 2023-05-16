@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Modules\Quotation\Entities\Signal;
+use Modules\Signal\Entities\Signal;
 use Modules\Symbol\Entities\Symbol;
 use Modules\Symbol\Exchanges\Exchange;
 use Modules\Trader\Entities\Trade;
@@ -39,19 +39,8 @@ class ExampleExchangeCommand extends Command
         }
 
         Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
-            $book = [];
-            $links = [];
-
-            foreach (config('symbol.exchanges') as $exchange => $data){
-                $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
-            }
-
-            foreach (config('symbol.exchanges') as $exchange => $data){
-                if ($exchanges[$exchange]['is_online']) {
-                    $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
-                    $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
-                }
-            }
+            $book = json_decode(file_get_contents(storage_path('book.json'),true),true);
+            $links = json_decode(file_get_contents(storage_path('links.json'),true),true);
 
             $trade = new Trade($symbol->name, $book,$links);
 
@@ -64,6 +53,8 @@ class ExampleExchangeCommand extends Command
                 $signal->sell_prices = $trade->quoteCoinSellPrice(true);
                 $signal->sell_volumes = [$trade->baseCoinSellVolume(false), $trade->quoteCoinSellVolume(false)];
                 $signal->buy_volumes = [$trade->baseCoinBuyVolume(false), $trade->quoteCoinBuyVolume(false)];
+                $signal->buy_exchange = $trade->buy()['exchange'];
+                $signal->sell_exchange = $trade->sell()['exchange'];
 
                 $signal->save();
 

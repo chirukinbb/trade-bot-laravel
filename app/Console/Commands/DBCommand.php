@@ -27,8 +27,9 @@ class DBCommand extends Command
      */
     public function handle()
     {
-        Schema::table('symbols', function (Blueprint $table) {
-            $table->addColumn('integer','volume');
+        Schema::table('signals', function (Blueprint $table) {
+            $table->addColumn('string','sell_exchange',['length'=>100]);
+            $table->addColumn('string','buy_exchange',['length'=>100]);
         });
     }
 }

@@ -299,7 +299,7 @@ return [
             'text'         => 'Symbols',
         ],
         [
-            'url'         => '/signals',
+            'url'         => '/signal/list',
             'text'         => 'Signals',
         ],
         [

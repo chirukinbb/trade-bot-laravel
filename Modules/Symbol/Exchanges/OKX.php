@@ -56,7 +56,28 @@ class OKX extends Exchange
     public function sendOrder(array $data): array
     {
         $data = $this->sdk->order()->post([
-
+            'instrument_id'=>$data['symbol'],
+            'side'=>$data['side'],
+            'price'=>$data['total']['price']['end'],
+            'size'=>$data['volume'],
+            'margin_trading'=>2,
         ]);
+
+        return $data['data'];
+    }
+
+    public function order(array $data)
+    {
+        $order = $this->sdk->order()->get([
+            'order_id'=>$data['id'],
+            'symbol'=>$data['symbol']
+            ]);
+
+        return [
+            'volume'=>$order['size'],
+            'price'=>$order['price'],
+            'side'=>$data['side'],
+            'status'=>true,
+        ];
     }
 }

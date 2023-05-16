@@ -1,7 +1,6 @@
 {
     "User": true,
-    "Quotation": true,
-    "Deal": true,
+    "Signal": true,
     "Symbol": true,
     "Trader": true,
     "Dashboard": true,

@@ -16,7 +16,7 @@ class LoginRequest extends FormRequest
         return [
             'email'=>'email|required',
             'password'=>'string|required',
-            'rememberme'=>'string'
+            'remember'=>'string'
         ];
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Modules\Trader\Entities;
 
-use function Webmozart\Assert\Tests\StaticAnalysis\object;
-
 class Trade
 {
     private array $sell;
@@ -80,7 +78,7 @@ class Trade
     {
         $this->{$direction}['book'] = array_merge(
             $this->{$direction}['book'],
-            $this->orderBook[$this->{$direction}['exchange']][($direction === 'sell') ? 'bids' : 'asks']
+            $this->orderBook[$this->{str_replace($direction,'','buysell')}['exchange']][($direction !== 'sell') ? 'bids' : 'asks']
         );
         $this->{$direction}['total'] = [
             'volume'=>0,
@@ -120,7 +118,7 @@ class Trade
         }
     }
 
-    private function buyExchangeTitle(bool $wrap = true)
+    function buyExchangeTitle(bool $wrap = true)
     {
         return $wrap ? $this->linkWrap('buy',config('symbol.exchanges.'.$this->buy['exchange'].'.title'))
             : config('symbol.exchanges.'.$this->buy['exchange'].'.title');
@@ -171,10 +169,10 @@ class Trade
     public function quoteCoinSellPrice(bool $isArray = false)
     {
         if ($isArray){
-            return [$this->buy['total']['price']['start'],$this->buy['total']['price']['end']];
+            return [$this->sell['total']['price']['start'],$this->sell['total']['price']['end']];
         }
 
-        return $this->buy['total']['price']['start'].' - '.$this->buy['total']['price']['end'].' '.$this->symbol[1];
+        return $this->sell['total']['price']['start'].' - '.$this->sell['total']['price']['end'].' '.$this->symbol[1];
     }
 
     public function quoteCoinProfit()

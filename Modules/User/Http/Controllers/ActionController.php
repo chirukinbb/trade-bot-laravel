@@ -11,8 +11,8 @@ class ActionController extends Controller
 {
     public function login(LoginRequest $request)
     {
-        if (auth()->attempt($request->only('password','email'),$request->rememberme === 'on')){
-            return redirect()->route('symbols');
+        if (auth()->attempt($request->only('password','email'),$request->remember === 'on')){
+            return redirect()->route('dashboard');
         }
 
         return redirect()->back();

@@ -25,6 +25,5 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-    //dd((new \Modules\Symbol\Exchanges\Bitget())->isSymbolOnline('QTUM:ETH'));
     Artisan::call('trader:example');
 });

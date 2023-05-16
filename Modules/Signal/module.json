@@ -1,0 +1,11 @@
+{
+    "name": "Signal",
+    "alias": "Signal",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Signal\\Providers\\SignalServiceProvider"
+    ],
+    "files": []
+}

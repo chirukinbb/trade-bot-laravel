@@ -13,7 +13,7 @@
         </div>
         <form class="card-body" method="post">
             @csrf
-            <label for="trading" class="p-2 d-block">
+            <label for="trading" class="py-2 d-block">
                 <input type="hidden" name="IS_TRADING_ENABLED" value="0">
                 <input type="checkbox" id="trading" name="IS_TRADING_ENABLED" value="1" class="" @checked(env('IS_TRADING_ENABLED') == 1)>
                 Trading Enabled
@@ -32,7 +32,7 @@
                             </div>
                     </div>
                 @else
-                    <label for="{{$field}}" class="p-2 d-block">
+                    <label for="{{$field}}" class="py-2 d-block">
                         {{$data}}
                         <input type="text" name="{{$field}}" value="{{env($field)}}" class="form-control onlyDigits">
                     </label>
