@@ -12,6 +12,10 @@
         tr{
             cursor: pointer;
         }
+
+        svg{
+            display: none;
+        }
     </style>
 @stop
 
@@ -69,7 +73,11 @@
                     </tr>
                 @endforeach
                 </tbody>
-                <tfoot>{{$signals->links()}}</tfoot>
+                <tfoot>
+                <tr>
+                    <td>{{$signals->links()}}{{$signals->links()}}</td>
+                </tr>
+                </tfoot>
             </table>
         </div>
     </div>
