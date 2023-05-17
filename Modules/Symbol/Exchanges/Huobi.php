@@ -33,7 +33,7 @@ class Huobi extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>100])['tick'];
+        $data = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>20])['tick'];
         $book = [];
         $i = 0;
 
