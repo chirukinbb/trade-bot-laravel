@@ -33,7 +33,7 @@ class Bybit extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>5])['result'];
+        $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>100])['result'];
         $book = [];
         $i = 0;
 

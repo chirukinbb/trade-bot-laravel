@@ -33,7 +33,7 @@ class OKX extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = (array)json_decode(file_get_contents('https://www.okx.com/api/v5/market/books?instId='.$this->normalize($symbol).'&sz=5'))->data[0];
+        $data = (array)json_decode(file_get_contents('https://www.okx.com/api/v5/market/books?instId='.$this->normalize($symbol).'&sz=100'))->data[0];
         $book = [];
         $i = 0;
 

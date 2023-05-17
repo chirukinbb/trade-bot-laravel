@@ -30,7 +30,7 @@ class Kucoin extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data  = $this->sdk->market()->getOrderBookLevel2_20(['symbol'=>$this->normalize($symbol)])['data'];
+        $data  = $this->sdk->market()->getOrderBookLevel2_100(['symbol'=>$this->normalize($symbol)])['data'];
         $book = [];
         $i = 0;
 

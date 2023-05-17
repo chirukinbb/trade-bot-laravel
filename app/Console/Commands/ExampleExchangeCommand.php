@@ -39,8 +39,19 @@ class ExampleExchangeCommand extends Command
         }
 
         Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
-            $book = json_decode(file_get_contents(storage_path('book.json'),true),true);
-            $links = json_decode(file_get_contents(storage_path('links.json'),true),true);
+            $book = [];
+            $links = [];
+
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline('IOTA:USDT');
+            }
+
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                if ($exchanges[$exchange]['is_online']) {
+                    $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook('IOTA:USDT');
+                    $links[$exchange] = $exchanges[$exchange]['adapter']->link('IOTA:USDT');
+                }
+            }
 
             $trade = new Trade($symbol->name, $book,$links);
 

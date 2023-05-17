@@ -35,7 +35,7 @@ class Gate extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit=5'));
+        $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit=100'));
         $book = [];
         $i = 0;
 
