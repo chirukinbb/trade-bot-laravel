@@ -78,7 +78,7 @@ class Trade
     {
         $this->{$direction}['book'] = array_merge(
             $this->{$direction}['book'],
-            $this->orderBook[$this->{str_replace($direction,'','buysell')}['exchange']][($direction !== 'sell') ? 'bids' : 'asks']
+            array_reverse($this->orderBook[$this->{str_replace($direction,'','buysell')}['exchange']][($direction !== 'sell') ? 'bids' : 'asks'])
         );
         $this->{$direction}['total'] = [
             'volume'=>0,

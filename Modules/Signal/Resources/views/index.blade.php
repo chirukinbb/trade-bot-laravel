@@ -75,7 +75,7 @@
                 </tbody>
                 <tfoot>
                 <tr>
-                    <td>{{$signals->links()}}{{$signals->links()}}</td>
+                    <td colspan="6">{{$signals->links()}}</td>
                 </tr>
                 </tfoot>
             </table>

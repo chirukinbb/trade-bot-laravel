@@ -25,6 +25,5 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-    new \Modules\Symbol\Exchanges\Binance();
-    //Artisan::call('trader:example');
+    Artisan::call('trader:example');
 });

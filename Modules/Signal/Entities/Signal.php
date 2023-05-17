@@ -57,7 +57,7 @@ class Signal extends Model
 
     public function profit(bool $coinSymbol = true)
     {
-        return number_format($this->buy_volumes[1] - $this->sell_volumes[1],8).($coinSymbol ? $this->quote_coin : '');
+        return number_format($this->sell_volumes[1] - $this->buy_volumes[1],8).($coinSymbol ? $this->quote_coin : '');
     }
 
     public function spread()
