@@ -33,7 +33,7 @@ class Bitget extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit=100'))->data;
+        $data = json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH')))->data;
         $book = [];
         $i = 0;
 

@@ -32,7 +32,7 @@ class Mexc extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>100])['data'];
+        $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>env('DEPTH')])['data'];
         $book = [];
         $i = 0;
 

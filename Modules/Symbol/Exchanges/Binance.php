@@ -37,7 +37,7 @@ class Binance extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->depth($this->normalize($symbol),100);
+        $data = $this->sdk->depth($this->normalize($symbol),env('DEPTH'));
         $book = [];
         $i = 0;
 
