@@ -26,4 +26,5 @@ use Modules\Trader\Entities\Trade;
 
 Route::get('e',function (){
     Artisan::call('trader:example');
+  // dd( (new \Modules\Symbol\Exchanges\Websocket\Binance())->betterPrices('BTCUSDT'));
 });

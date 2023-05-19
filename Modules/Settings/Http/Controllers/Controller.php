@@ -6,7 +6,7 @@ abstract class Controller extends \App\Http\Controllers\Controller
 {
     protected array $fields = [
         'SECONDS_TIMEOUT'=>'Loop Timeout(seconds)',
-        'TARGET_SPREAD'=>'Target Spread(%)'
+        'TARGET_PROFIT'=>'Target Profit(%)'
     ];
 
     public function __construct()

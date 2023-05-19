@@ -11,21 +11,19 @@ class Trade
     public function __construct(
         string $symbol,
         private array $orderBook,
-        private array $links
+        private array $links,
+        float $fee = 0
     )
     {
         $this->symbol = explode(':',$symbol);
         // биржи с лучшим предложением
-        foreach ($this->orderBook as $exchange => $book){
-            $this->setBetterPrice($exchange,$book,'sell');
-            $this->setBetterPrice($exchange,$book,'buy');
-        }
+        $this->setBetterPrices();
         // установка книги ордеров с противоположной биржы
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
-        $this->buy['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']);
-        $this->sell['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']);
+        $this->buy['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']) - $fee;
+        $this->sell['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']) - $fee;
 
         $this->calculatePricesAndVolumes('sell');
         $this->calculatePricesAndVolumes('buy');
@@ -98,21 +96,31 @@ class Trade
         }
     }
 
-    private function setBetterPrice(string $exchange,array$book,string $direction)
+    private function setBetterPrices()
     {
-        if (!isset($this->{$direction}['book'])){
-            $this->{$direction} = [
-                'exchange' => $exchange,
-                'book' => [$book[($direction === 'sell') ? 'asks' : 'bids'][0]]
-            ];
-        }else {
-            $result = ($direction === 'sell') ? $this->sell['book'][0]['price'] < $book['asks'][0]['price']
-                : $this->buy['book'][0]['price'] > $book['bids'][0]['price'];
+        $asks = [];
+        $bids =  [];
 
-            if ($result) {
-                $this->{$direction} = [
+        foreach ($this->orderBook as $exchange => $book){
+            $asks[] = $book['asks'][0]['price'];
+            $bids[] = $book['bids'][0]['price'];
+        }
+
+        $minAsk = min($asks);
+        $maxBid = max($bids);
+
+        foreach ($this->orderBook as $exchange => $book){
+            if ($book['asks'][0]['price'] === $minAsk){
+                $this->sell = [
                     'exchange' => $exchange,
-                    'book' => [$book[($direction === 'sell') ? 'asks' : 'bids'][0]]
+                    'book' => [$book['asks'][0]]
+                ];
+            }
+
+            if ($book['bids'][0]['price'] === $maxBid){
+                $this->buy = [
+                    'exchange' => $exchange,
+                    'book' => [$book['bids'][0]]
                 ];
             }
         }
@@ -175,13 +183,18 @@ class Trade
         return $this->sell['total']['price']['start'].' - '.$this->sell['total']['price']['end'].' '.$this->symbol[1];
     }
 
-    public function quoteCoinProfit()
+    public function quoteCoinProfit(): string
     {
         return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)),8).' '.$this->symbol[1];
     }
 
-    public function spread()
+    public function spread(): string
     {
         return number_format(($this->sell['book'][0]['price'] - $this->buy['book'][0]['price']) * 100 / $this->sell['book'][0]['price'],3).'%';
+    }
+
+    public function relativeProfit(): float
+    {
+        return (100*$this->quoteCoinProfit() / $this->quoteCoinSellVolume());
     }
 }

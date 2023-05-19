@@ -13,6 +13,7 @@ class Bitget extends Exchange
     public function __construct()
     {
         $this->sdk  = new BitgetSpot(env('BITGET_API_KEY',''),env('BITGET_API_SECRET',''));
+        //dd($this->sdk->common()->getSymbols());
     }
 
     public function symbols(): array

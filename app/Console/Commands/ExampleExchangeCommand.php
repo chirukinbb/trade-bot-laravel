@@ -44,16 +44,8 @@ class ExampleExchangeCommand extends Command
             $links = [];
 
             try {
-                foreach (config('symbol.exchanges') as $exchange => $data){
-                    $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
-                }
-
-                foreach (config('symbol.exchanges') as $exchange => $data){
-                    if ($exchanges[$exchange]['is_online']) {
-                        $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
-                        $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
-                    }
-                }
+                $book = json_decode(file_get_contents(storage_path('book.json')),true);
+                $links = json_decode(file_get_contents(storage_path('links.json')),true);
 
                 $trade = new Trade($symbol->name, $book,$links);
 
@@ -100,6 +92,7 @@ class ExampleExchangeCommand extends Command
                 }
             }catch (\Exception $exception){
                 \Log::info($exception->getMessage());
+                dd($exception->getLine());
             }
         });
     }

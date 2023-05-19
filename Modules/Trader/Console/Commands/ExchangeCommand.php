@@ -55,9 +55,9 @@ class ExchangeCommand extends Command
                         }
                     }
 
-                    $trade = new Trade($symbol->name, $book,$links);
+                    $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']->withdrawalFee(explode(':',$symbol->name)[1]));
 
-                    if ($trade->spread() > env('TARGET_SPREAD')) {
+                    if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
 
                         if (env('IS_TRADING_ENABLED') == 1){
                             $sell = $trade->sell();

@@ -86,4 +86,9 @@ class Binance extends Exchange
             'side'=>$data['side']
         ];
     }
+
+    public function withdrawalFee(string $coin)
+    {
+        return $this->sdk->withdrawFee($coin)['withdrawFee'];
+    }
 }
