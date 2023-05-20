@@ -25,9 +25,13 @@ class Gate extends Exchange
     public function isSymbolOnline(string $symbol): bool
     {
         try {
-            $data  = json_decode(file_get_contents('https://api.gateio.ws/api/v4/margin/currency_pairs/'.$this->normalize($symbol)));
-
-        return $data->status === 1;
+            $data  = json_decode(file_get_contents('https://api.gateio.ws/api/v4/margin/currency_pairs'));
+         //   dd(str_replace(':','_',$symbol),$data);
+            $symbolData = array_filter($data,function ($data) use ($symbol){
+                return $data->id === str_replace(':','_',$symbol);
+            });
+           // dd(array_shift($symbolData));
+        return !empty($symbolData) && array_shift($symbolData)->ststus === 1;
         }catch (\Exception $exception){
             return false;
         }

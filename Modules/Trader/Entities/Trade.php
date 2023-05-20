@@ -22,8 +22,8 @@ class Trade
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
-        $this->buy['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']) - $fee;
-        $this->sell['total']['volume'] = min($this->buy['total']['volume'], $this->sell['total']['volume']) - $fee;
+        $this->buy['total']['volume'] = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
+        $this->sell['total']['volume'] = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
 
         $this->calculatePricesAndVolumes('sell');
         $this->calculatePricesAndVolumes('buy');
@@ -56,36 +56,43 @@ class Trade
 
     private function calculatePricesAndVolumes(string $direction)
     {
+        // обьем, который нужно сьесть
         $restVolume = $this->{$direction}['total']['volume'];
         $this->{$direction}['total']['quote'] = 0;
         $i = 0;
-
-        while ($restVolume > 0){
-            if (isset($this->{$direction}['book'][$i])){
-                $volume = min($restVolume,$this->{$direction}['book'][$i]['value']);
+        // расчет конечной цены
+        // действие повторяетчя пока не сьест ввесь обьем
+        foreach ($this->{$direction}['book'] as $book) {
+            if ($restVolume > 0){
+                // сравнивает оставшийся обьем и обьем текущего ордера, берет меньший
+                $volume = min([$restVolume,$this->{$direction}['book'][$i]['value']]);
+                // вычитает выбранный обьем из осавшегося
                 $restVolume -= $volume;
+                // считает обьем quote coin в сьеденом обьеме ордера
                 $this->{$direction}['total']['quote'] += $volume * $this->{$direction}['book'][$i]['price'];
+                // записывает(перезаписывает) цену текущего ордера как конечную цену
                 $this->{$direction}['total']['price']['end'] = $this->{$direction}['book'][$i]['price'];
             }
-
-            $i++;
         }
     }
 
     private function setBookFromAnotherExchange(string $direction)
     {
+        // слияние однонаправленных ордеров выбранных бирж
+        // array_reverse розворачивает массив ордеров в порядке от более к менее удаленной спотовой цене
         $this->{$direction}['book'] = array_merge(
             $this->{$direction}['book'],
             array_reverse($this->orderBook[$this->{str_replace($direction,'','buysell')}['exchange']][($direction !== 'sell') ? 'bids' : 'asks'])
         );
+        // установка стартовой цены для биржы
         $this->{$direction}['total'] = [
             'volume'=>0,
             'price'=>['start'=>$this->{$direction}['book'][0]['price']]
         ];
-
+        // уничтожение одеров, цена которых выходит из диапазона лучших цен
         foreach ($this->{$direction}['book'] as $book) {
             $result = ($direction === 'sell') ? ($this->{$direction}['book'][0]['price'] >= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] < $book['price'])
-                : ($this->{$direction}['book'][0]['price'] <= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] > $book['price']);
+                : (($this->{$direction}['book'][0]['price'] <= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] > $book['price']));
 
             if ($result) {
                 $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
@@ -100,24 +107,24 @@ class Trade
     {
         $asks = [];
         $bids =  [];
-
+        // заполнение массива ценами первых ордеров с каждой биржы в обеих направлениях
         foreach ($this->orderBook as $exchange => $book){
             $asks[] = $book['asks'][0]['price'];
             $bids[] = $book['bids'][0]['price'];
         }
-
-        $minAsk = min($asks);
-        $maxBid = max($bids);
-
+        // выбор учшихцен
+        $maxAsk = max($asks);
+        $minBid = min($bids);
+        // поиск бирж, предлогащих лучшие цены
         foreach ($this->orderBook as $exchange => $book){
-            if ($book['asks'][0]['price'] === $minAsk){
+            if ($book['asks'][0]['price'] == $maxAsk){
                 $this->sell = [
                     'exchange' => $exchange,
                     'book' => [$book['asks'][0]]
                 ];
             }
 
-            if ($book['bids'][0]['price'] === $maxBid){
+            if ($book['bids'][0]['price'] == $minBid){
                 $this->buy = [
                     'exchange' => $exchange,
                     'book' => [$book['bids'][0]]
@@ -183,9 +190,9 @@ class Trade
         return $this->sell['total']['price']['start'].' - '.$this->sell['total']['price']['end'].' '.$this->symbol[1];
     }
 
-    public function quoteCoinProfit(): string
+    public function quoteCoinProfit(bool $withSymbol = true): string
     {
-        return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)),8).' '.$this->symbol[1];
+        return number_format(($this->quoteCoinSellVolume(false) - $this->quoteCoinBuyVolume(false)),8).($withSymbol ? ' '.$this->symbol[1] : '');
     }
 
     public function spread(): string
@@ -195,6 +202,6 @@ class Trade
 
     public function relativeProfit(): float
     {
-        return (100*$this->quoteCoinProfit() / $this->quoteCoinSellVolume());
+        return (100*(float)$this->quoteCoinProfit(false) / $this->quoteCoinSellVolume(false));
     }
 }

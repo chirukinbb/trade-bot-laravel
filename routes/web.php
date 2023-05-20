@@ -26,5 +26,10 @@ use Modules\Trader\Entities\Trade;
 
 Route::get('e',function (){
     Artisan::call('trader:example');
-  // dd( (new \Modules\Symbol\Exchanges\Websocket\Binance())->betterPrices('BTCUSDT'));
+   dd( (new \Modules\Symbol\Exchanges\Websocket\Binance())->sendOrder([
+       'symbol'=>'BTCUSDT',
+       'price'=>300,
+       'side'=>'SELL',
+       'volume'=>5
+   ]));
 });

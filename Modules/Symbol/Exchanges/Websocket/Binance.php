@@ -51,16 +51,20 @@ class Binance extends Exchange
 
     public function sendOrder(array $data): array
     {
-        $response = $this->request('order.test',[
-            'symbol'=>$data['symbol'],
-            'price'=>$data['price'],
+        $params  = [
+            'apiKey'=>env('BINANCE_API_KEY'),
             'quantity'=>$data['volume'],
             'side'=>$data['side'],
-            'type'=>'LIMIT',
-            'apiKey'=>env('BINANCE_API_KEY'),
-            'signature'=>$this->signature([]),
-            'timestamp'=>now()->timestamp
-        ]);
+            'symbol'=>$data['symbol'],
+            'timestamp'=>now()->timestamp*1000,
+            'type'=>'MARKET'
+
+        ];
+
+        $response = $this->request('order.test',array_merge(
+            $params,
+            ['signature'=>$this->signature($params)]
+        ));
 
         return $response['result']['orderId'];
     }

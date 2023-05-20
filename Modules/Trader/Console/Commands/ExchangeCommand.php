@@ -55,15 +55,15 @@ class ExchangeCommand extends Command
                         }
                     }
 
-                    $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']->withdrawalFee(explode(':',$symbol->name)[1]));
+                    $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']['adapter']->withdrawalFee(explode(':',$symbol->name)[1]));
 
                     if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
 
                         if (env('IS_TRADING_ENABLED') == 1){
                             $sell = $trade->sell();
                             $buy = $trade->buy();
-                            $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder($sell);
-                            $buyOrderId = $exchanges[$buy['exchange']]['adapter']->sendOrder($buy);
+                            $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$sell));
+                            $buyOrderId = $exchanges[$buy['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$buy));
                         }
 
                         $signal = Signal::getModel();
@@ -99,7 +99,7 @@ class ExchangeCommand extends Command
                         ]);
                     }
                 }catch (\Exception $exception){
-                    \Log::info($exception->getMessage());
+                    echo $exception->getLine().PHP_EOL;
                 }
             });
         });

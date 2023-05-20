@@ -44,12 +44,21 @@ class ExampleExchangeCommand extends Command
             $links = [];
 
             try {
-                $book = json_decode(file_get_contents(storage_path('book.json')),true);
-                $links = json_decode(file_get_contents(storage_path('links.json')),true);
+                foreach (config('symbol.exchanges') as $exchange => $data){
+                    $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
+                }
 
-                $trade = new Trade($symbol->name, $book,$links);
+                foreach (config('symbol.exchanges') as $exchange => $data){
+                    if ($exchanges[$exchange]['is_online']) {
+                        $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
+                        $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
+                    }
+                }
 
-                if ($trade->spread() > env('TARGET_SPREAD')) {
+                $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']['adapter']->withdrawalFee(explode(':',$symbol->name)[1]));
+                echo $symbol->name.PHP_EOL;
+                echo $trade->relativeProfit();
+                if (true/*$trade->relativeProfit() > env('TARGET_PROFIT')*/) {
 
                     if (env('IS_TRADING_ENABLED') == 1){
                         $sell = $trade->sell();
@@ -88,11 +97,10 @@ class ExampleExchangeCommand extends Command
                         'chat_id' => env('TELEGRAM_CHAT_ID'),
                         'text' => $trade->message(),
                         'parse_mode' => 'HTML'
-                    ]);
+                    ]);dd(4);
                 }
             }catch (\Exception $exception){
-                \Log::info($exception->getMessage());
-                dd($exception->getLine());
+                dd($exception);
             }
         });
     }
