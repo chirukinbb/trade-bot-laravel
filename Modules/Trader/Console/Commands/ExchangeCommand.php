@@ -99,7 +99,10 @@ class ExchangeCommand extends Command
                         ]);
                     }
                 }catch (\Exception $exception){
-                    echo $exception->getLine().PHP_EOL;
+                    \Log::info($exception->getLine());
+                    \Log::info($exception->getFile());
+                    \Log::info($exception->getMessage());
+                    \Log::info('--------------------------------');
                 }
             });
         });

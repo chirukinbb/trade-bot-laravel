@@ -22,8 +22,9 @@ class Trade
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
-        $this->buy['total']['volume'] = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
-        $this->sell['total']['volume'] = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
+        $volume = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
+        $this->buy['total']['volume'] = $volume;
+        $this->sell['total']['volume'] = $volume;
 
         $this->calculatePricesAndVolumes('sell');
         $this->calculatePricesAndVolumes('buy');
@@ -59,19 +60,18 @@ class Trade
         // обьем, который нужно сьесть
         $restVolume = $this->{$direction}['total']['volume'];
         $this->{$direction}['total']['quote'] = 0;
-        $i = 0;
         // расчет конечной цены
         // действие повторяетчя пока не сьест ввесь обьем
         foreach ($this->{$direction}['book'] as $book) {
             if ($restVolume > 0){
                 // сравнивает оставшийся обьем и обьем текущего ордера, берет меньший
-                $volume = min([$restVolume,$this->{$direction}['book'][$i]['value']]);
+                $volume = min([$restVolume,$book['value']]);
                 // вычитает выбранный обьем из осавшегося
                 $restVolume -= $volume;
                 // считает обьем quote coin в сьеденом обьеме ордера
-                $this->{$direction}['total']['quote'] += $volume * $this->{$direction}['book'][$i]['price'];
+                $this->{$direction}['total']['quote'] += $volume * $book['price'];
                 // записывает(перезаписывает) цену текущего ордера как конечную цену
-                $this->{$direction}['total']['price']['end'] = $this->{$direction}['book'][$i]['price'];
+                $this->{$direction}['total']['price']['end'] = $book['price'];
             }
         }
     }
@@ -91,8 +91,8 @@ class Trade
         ];
         // уничтожение одеров, цена которых выходит из диапазона лучших цен
         foreach ($this->{$direction}['book'] as $book) {
-            $result = ($direction === 'sell') ? ($this->{$direction}['book'][0]['price'] >= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] < $book['price'])
-                : (($this->{$direction}['book'][0]['price'] <= $book['price'] && $this->{str_replace($direction,'','buysell')}['book'][0]['price'] > $book['price']));
+            $result = ($direction === 'sell') ? ($this->sell['book'][0]['price'] >= $book['price'] && $this->orderBook[$this->buy['exchange']]['asks'][0]['price'] < $book['price'])
+                : (($this->buy['book'][0]['price'] <= $book['price'] && $this->orderBook[$this->sell['exchange']]['bids'][0]['price'] > $book['price']));
 
             if ($result) {
                 $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
