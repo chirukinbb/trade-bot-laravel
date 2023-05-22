@@ -22,7 +22,7 @@ class Trade
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
-        $volume = min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee;
+        $volume = max(min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee,0);
         $this->buy['total']['volume'] = $volume;
         $this->sell['total']['volume'] = $volume;
 
@@ -197,11 +197,11 @@ class Trade
 
     public function spread(): string
     {
-        return number_format(($this->sell['book'][0]['price'] - $this->buy['book'][0]['price']) * 100 / $this->sell['book'][0]['price'],3).'%';
+        return ($this->sell['book'][0]['price'] === 0 ? 0 : number_format(($this->sell['book'][0]['price'] - $this->buy['book'][0]['price']) * 100 / $this->sell['book'][0]['price'],3)).'%';
     }
 
     public function relativeProfit(): float
     {
-        return (100*(float)$this->quoteCoinProfit(false) / $this->quoteCoinSellVolume(false));
+        return ($this->quoteCoinSellVolume(false) == 0) ? -1 : (100*(float)$this->quoteCoinProfit(false) / $this->quoteCoinSellVolume(false));
     }
 }

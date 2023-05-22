@@ -39,7 +39,7 @@ class ExampleExchangeCommand extends Command
             $exchanges[$exchange] = ['adapter'=>new $data['adapter']];
         }
 
-        Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
+        Symbol::whereName('VEN:USDT')->each(function (Symbol $symbol) use ($exchanges,$tgBot){
             $book = [];
             $links = [];
 

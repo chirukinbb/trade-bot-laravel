@@ -55,48 +55,50 @@ class ExchangeCommand extends Command
                         }
                     }
 
-                    $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']['adapter']->withdrawalFee(explode(':',$symbol->name)[1]));
+                    if (!empty($book)){
+                        $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']['adapter']->withdrawalFee(explode(':',$symbol->name)[1]));
 
-                    if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
+                        if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
 
-                        if (env('IS_TRADING_ENABLED') == 1){
-                            $sell = $trade->sell();
-                            $buy = $trade->buy();
-                            $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$sell));
-                            $buyOrderId = $exchanges[$buy['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$buy));
-                        }
+                            if (env('IS_TRADING_ENABLED') == 1){
+                                $sell = $trade->sell();
+                                $buy = $trade->buy();
+                                $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$sell));
+                                $buyOrderId = $exchanges[$buy['exchange']]['adapter']->sendOrder(array_merge(['symbol'=>$symbol->name],$buy));
+                            }
 
-                        $signal = Signal::getModel();
+                            $signal = Signal::getModel();
 
-                        $signal->base_coin = explode(':', $symbol->name)[0];
-                        $signal->quote_coin = explode(':', $symbol->name)[1];
-                        $signal->buy_prices = $trade->baseCoinBuyPrice(true);
-                        $signal->sell_prices = $trade->quoteCoinSellPrice(true);
-                        $signal->sell_volumes = [$trade->baseCoinSellVolume(false), $trade->quoteCoinSellVolume(false)];
-                        $signal->buy_volumes = [$trade->baseCoinBuyVolume(false), $trade->quoteCoinBuyVolume(false)];
-                        $signal->buy_exchange = $trade->buy()['exchange'];
-                        $signal->sell_exchange = $trade->sell()['exchange'];
+                            $signal->base_coin = explode(':', $symbol->name)[0];
+                            $signal->quote_coin = explode(':', $symbol->name)[1];
+                            $signal->buy_prices = $trade->baseCoinBuyPrice(true);
+                            $signal->sell_prices = $trade->quoteCoinSellPrice(true);
+                            $signal->sell_volumes = [$trade->baseCoinSellVolume(false), $trade->quoteCoinSellVolume(false)];
+                            $signal->buy_volumes = [$trade->baseCoinBuyVolume(false), $trade->quoteCoinBuyVolume(false)];
+                            $signal->buy_exchange = $trade->buy()['exchange'];
+                            $signal->sell_exchange = $trade->sell()['exchange'];
 
-                        $signal->save();
+                            $signal->save();
 
-                        if (env('IS_TRADING_ENABLED') == 1){
-                            Deal::create([
-                                'exchange'=>$sell['exchange'],
-                                'exchange_id'=>$sellOrderId,
-                                'signal_id'=>$signal->id
+                            if (env('IS_TRADING_ENABLED') == 1){
+                                Deal::create([
+                                    'exchange'=>$sell['exchange'],
+                                    'exchange_id'=>$sellOrderId,
+                                    'signal_id'=>$signal->id
+                                ]);
+                                Deal::create([
+                                    'exchange'=>$buy['exchange'],
+                                    'exchange_id'=>$buyOrderId,
+                                    'signal_id'=>$signal->id
+                                ]);
+                            }
+
+                            $tgBot->sendMessage([
+                                'chat_id' => env('TELEGRAM_CHAT_ID'),
+                                'text' => $trade->message(),
+                                'parse_mode' => 'HTML'
                             ]);
-                            Deal::create([
-                                'exchange'=>$buy['exchange'],
-                                'exchange_id'=>$buyOrderId,
-                                'signal_id'=>$signal->id
-                            ]);
                         }
-
-                        $tgBot->sendMessage([
-                            'chat_id' => env('TELEGRAM_CHAT_ID'),
-                            'text' => $trade->message(),
-                            'parse_mode' => 'HTML'
-                        ]);
                     }
                 }catch (\Exception $exception){
                     \Log::info($exception->getLine());
