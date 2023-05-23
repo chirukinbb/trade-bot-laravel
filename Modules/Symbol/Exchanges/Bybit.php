@@ -34,23 +34,8 @@ class Bybit extends Exchange
     public function orderBook(string $symbol): array
     {
         $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>env('DEPTH')])['result'];
-        $book = [];
-        $i = 0;
 
-        while ($i < count($data['asks'])){
-            $book['asks'][] = [
-                'price'=>$data['asks'][$i][0],
-                'value'=>$data['asks'][$i][1],
-            ];
-            $book['bids'][] = [
-                'price'=>$data['bids'][$i][0],
-                'value'=>$data['bids'][$i][1],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function link(string $symbol)

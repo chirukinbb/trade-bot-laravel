@@ -34,24 +34,9 @@ class Bitget extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH')))->data;
-        $book = [];
-        $i = 0;
+        $data = json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH')),true)['data'];
 
-        while ($i < count($data->asks)){
-            $book['asks'][] = [
-                'price'=>$data->asks[$i][0],
-                'value'=>$data->asks[$i][1],
-            ];
-            $book['bids'][] = [
-                'price'=>$data->bids[$i][0],
-                'value'=>$data->bids[$i][1],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array

@@ -25,11 +25,22 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-    Artisan::call('trader:example');
-   dd( (new \Modules\Symbol\Exchanges\Websocket\Binance())->sendOrder([
-       'symbol'=>'BTCUSDT',
-       'price'=>300,
-       'side'=>'SELL',
-       'volume'=>5
-   ]));
+$start = now()->timestamp;
+$loop = React\EventLoop\Factory::create();
+
+foreach (range(1,5) as $r){
+    $p = new \React\Promise\Deferred();
+
+    $loop->addTimer($r,function ()use ($p,$r){
+        $p->resolve($r);
+    });
+
+    $p->promise()->then(function ($r){
+        echo $r;
+    });
+}
+
+$loop->run();
+
+dd(now()->timestamp-$start);
 });

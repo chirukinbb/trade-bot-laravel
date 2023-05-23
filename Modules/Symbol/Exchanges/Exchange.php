@@ -24,4 +24,26 @@ abstract class Exchange
 
         return str_replace('{symbol}',$this->normalize($symbol),$link);
     }
+
+    protected function extractBook(array $data)
+    {
+        $book = [];
+        $i = 0;
+        $count = min(count($data['asks']),count($data['bids']));
+
+        while ($i < $count){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i][0],
+                'value'=>$data['asks'][$i][1],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['bids'][$i][0],
+                'value'=>$data['bids'][$i][1],
+            ];
+
+            $i++;
+        }
+
+        return $book;
+    }
 }

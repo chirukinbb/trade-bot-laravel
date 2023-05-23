@@ -38,23 +38,8 @@ class Binance extends Exchange
     public function orderBook(string $symbol): array
     {
         $data = $this->sdk->depth($this->normalize($symbol),env('DEPTH'));
-        $book = [];
-        $i = 0;
 
-        while ($i < count($data['asks'])){
-            $book['asks'][] = [
-                'price'=>($key = array_keys($data['asks'])[$i]),
-                'value'=>$data['asks'][$key],
-            ];
-            $book['bids'][] = [
-                'price'=>($key = array_keys($data['bids'])[$i]),
-                'value'=>$data['bids'][$key],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array
@@ -90,5 +75,27 @@ class Binance extends Exchange
     public function withdrawalFee(string $coin)
     {
         return $this->sdk->withdrawFee($coin)['withdrawFee'];
+    }
+
+    protected function extractBook(array $data)
+    {
+        $book = [];
+        $i = 0;
+        $count = min(count($data['asks']),count($data['bids']));
+
+        while ($i < $count){
+            $book['asks'][] = [
+                'price'=>($key = array_keys($data['asks'])[$i]),
+                'value'=>$data['asks'][$key],
+            ];
+            $book['bids'][] = [
+                'price'=>($key = array_keys($data['bids'])[$i]),
+                'value'=>$data['bids'][$key],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 }

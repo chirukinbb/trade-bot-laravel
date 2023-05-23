@@ -26,11 +26,10 @@ class Gate extends Exchange
     {
         try {
             $data  = json_decode(file_get_contents('https://api.gateio.ws/api/v4/margin/currency_pairs'));
-         //   dd(str_replace(':','_',$symbol),$data);
+
             $symbolData = array_filter($data,function ($data) use ($symbol){
                 return $data->id === str_replace(':','_',$symbol);
             });
-           // dd(array_shift($symbolData));
         return !empty($symbolData) && array_shift($symbolData)->ststus === 1;
         }catch (\Exception $exception){
             return false;
@@ -40,23 +39,8 @@ class Gate extends Exchange
     public function orderBook(string $symbol): array
     {
         $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit='.env('DEPTH')));
-        $book = [];
-        $i = 0;
 
-        while ($i < count($data['asks'])){
-            $book['asks'][] = [
-                'price'=>$data['asks'][$i][0],
-                'value'=>$data['asks'][$i][1],
-            ];
-            $book['bids'][] = [
-                'price'=>$data['bids'][$i][0],
-                'value'=>$data['bids'][$i][1],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array

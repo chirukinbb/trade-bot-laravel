@@ -12,7 +12,8 @@ class Trade
         string $symbol,
         private array $orderBook,
         private array $links,
-        float $fee = 0
+        float $fee = 0,
+        float $maxVolume = 0,
     )
     {
         $this->symbol = explode(':',$symbol);
@@ -23,6 +24,8 @@ class Trade
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
         $volume = max(min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee,0);
+        $volume = min($volume,$maxVolume);
+
         $this->buy['total']['volume'] = $volume;
         $this->sell['total']['volume'] = $volume;
 
@@ -87,7 +90,10 @@ class Trade
         // установка стартовой цены для биржы
         $this->{$direction}['total'] = [
             'volume'=>0,
-            'price'=>['start'=>$this->{$direction}['book'][0]['price']]
+            'price'=>[
+                'start'=>$this->{$direction}['book'][0]['price'],
+                'end'=>$this->{$direction}['book'][0]['price'],
+                ]
         ];
         // уничтожение одеров, цена которых выходит из диапазона лучших цен
         foreach ($this->{$direction}['book'] as $book) {
@@ -98,6 +104,8 @@ class Trade
                 $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
             }else{
                 $index = array_search($book,$this->{$direction}['book']);
+
+                if ($index > 0)
                 unset($this->{$direction}['book'][$index]);
             }
         }

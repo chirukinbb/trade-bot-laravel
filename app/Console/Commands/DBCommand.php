@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Modules\Symbol\Entities\Symbol;
 
 class DBCommand extends Command
 {
@@ -27,9 +28,9 @@ class DBCommand extends Command
      */
     public function handle()
     {
-        Schema::table('signals', function (Blueprint $table) {
-            $table->addColumn('string','sell_exchange',['length'=>100]);
-            $table->addColumn('string','buy_exchange',['length'=>100]);
+        Symbol::each(function (Symbol $symbol){
+            $symbol->volume = 1000;
+            $symbol->save();
         });
     }
 }

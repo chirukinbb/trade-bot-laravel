@@ -8,6 +8,7 @@ use Modules\Signal\Entities\Signal;
 use Modules\Symbol\Entities\Symbol;
 use Modules\Symbol\Exchanges\Exchange;
 use Modules\Trader\Entities\Trade;
+use React\EventLoop\Factory;
 use React\EventLoop\Loop;
 use function env;
 
@@ -32,6 +33,7 @@ class ExampleExchangeCommand extends Command
      */
     public function handle()
     {
+
         $exchanges = [];
         $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
 
@@ -39,28 +41,32 @@ class ExampleExchangeCommand extends Command
             $exchanges[$exchange] = ['adapter'=>new $data['adapter']];
         }
 
-        Symbol::whereName('VEN:USDT')->each(function (Symbol $symbol) use ($exchanges,$tgBot){
+        $time_start0 = now();
+        $mem_start = memory_get_usage();
+
+        Symbol::each(function (Symbol $symbol) use ($exchanges,$tgBot){
             $book = [];
             $links = [];
 
-            try {
-                foreach (config('symbol.exchanges') as $exchange => $data){
-                    $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
-                }
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol->name);
+            }
 
-                foreach (config('symbol.exchanges') as $exchange => $data){
-                    if ($exchanges[$exchange]['is_online']) {
-                        $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
-                        $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
-                    }
+            foreach (config('symbol.exchanges') as $exchange => $data){
+                if ($exchanges[$exchange]['is_online']) {
+                    $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol->name);
+                    $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol->name);
                 }
+            }
 
-                $trade = new Trade($symbol->name, $book,$links,$exchanges['binance']['adapter']->withdrawalFee(explode(':',$symbol->name)[1]));
-                echo $symbol->name.PHP_EOL;
-                echo $trade->relativeProfit();
+            if (!empty($book)) {
+                $trade = new Trade($symbol->name, $book, $links,
+                    $exchanges['binance']['adapter']->withdrawalFee(explode(':', $symbol->name)[1]));
+
+
                 if (true/*$trade->relativeProfit() > env('TARGET_PROFIT')*/) {
 
-                    if (env('IS_TRADING_ENABLED') == 1){
+                    if (env('IS_TRADING_ENABLED') == 1) {
                         $sell = $trade->sell();
                         $buy = $trade->buy();
                         $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder($sell);
@@ -80,16 +86,16 @@ class ExampleExchangeCommand extends Command
 
                     $signal->save();
 
-                    if (env('IS_TRADING_ENABLED') == 1){
+                    if (env('IS_TRADING_ENABLED') == 1) {
                         Deal::create([
-                            'exchange'=>$sell['exchange'],
-                            'exchange_id'=>$sellOrderId,
-                            'signal_id'=>$signal->id
+                            'exchange' => $sell['exchange'],
+                            'exchange_id' => $sellOrderId,
+                            'signal_id' => $signal->id
                         ]);
                         Deal::create([
-                            'exchange'=>$buy['exchange'],
-                            'exchange_id'=>$buyOrderId,
-                            'signal_id'=>$signal->id
+                            'exchange' => $buy['exchange'],
+                            'exchange_id' => $buyOrderId,
+                            'signal_id' => $signal->id
                         ]);
                     }
 
@@ -97,11 +103,13 @@ class ExampleExchangeCommand extends Command
                         'chat_id' => env('TELEGRAM_CHAT_ID'),
                         'text' => $trade->message(),
                         'parse_mode' => 'HTML'
-                    ]);dd(4);
+                    ]);
                 }
-            }catch (\Exception $exception){
-                dd($exception);
             }
         });
+
+        echo now()->timestamp - $time_start0->timestamp;
+        echo '/';
+        echo memory_get_usage() - $mem_start;
     }
 }

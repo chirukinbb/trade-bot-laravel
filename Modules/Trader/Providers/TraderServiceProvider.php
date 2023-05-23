@@ -2,7 +2,7 @@
 
 namespace Modules\Trader\Providers;
 
-use App\Console\Commands\ExampleExchangeCommand;
+use App\Console\Commands\Example2ExchangeCommand;
 use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\ServiceProvider;
 use Modules\Trader\Console\Commands\ExchangeCommand;

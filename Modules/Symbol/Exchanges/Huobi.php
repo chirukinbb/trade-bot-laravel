@@ -34,23 +34,8 @@ class Huobi extends Exchange
     public function orderBook(string $symbol): array
     {
         $data = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>20])['tick'];
-        $book = [];
-        $i = 0;
 
-        while ($i < count($data['asks'])){
-            $book['asks'][] = [
-                'price'=>$data['asks'][$i][0],
-                'value'=>$data['asks'][$i][1],
-            ];
-            $book['bids'][] = [
-                'price'=>$data['bids'][$i][0],
-                'value'=>$data['bids'][$i][1],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array

@@ -33,23 +33,8 @@ class Mexc extends Exchange
     public function orderBook(string $symbol): array
     {
         $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>env('DEPTH')])['data'];
-        $book = [];
-        $i = 0;
 
-        while ($i < count($data['asks'])){
-            $book['asks'][] = [
-                'price'=>$data['asks'][$i]['price'],
-                'value'=>$data['asks'][$i]['quantity'],
-            ];
-            $book['bids'][] = [
-                'price'=>$data['bids'][$i]['price'],
-                'value'=>$data['bids'][$i]['quantity'],
-            ];
-
-            $i++;
-        }
-
-        return $book;
+        return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array
@@ -79,5 +64,27 @@ class Mexc extends Exchange
             'side'=>$data['trade_type'],
             'status'=>in_array($data['id'],$openOrderIds) ? 'Open' : 'Close',
         ];
+    }
+
+    protected function extractBook(array $data)
+    {
+        $book = [];
+        $i = 0;
+        $count = min(count($data['asks']),count($data['bids']));
+
+        while ($i < $count){
+            $book['asks'][] = [
+                'price'=>$data['asks'][$i]['price'],
+                'value'=>$data['asks'][$i]['quantity'],
+            ];
+            $book['bids'][] = [
+                'price'=>$data['bids'][$i]['price'],
+                'value'=>$data['bids'][$i]['quantity'],
+            ];
+
+            $i++;
+        }
+
+        return $book;
     }
 }
