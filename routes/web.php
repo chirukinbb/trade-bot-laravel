@@ -25,22 +25,5 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-$start = now()->timestamp;
-$loop = React\EventLoop\Factory::create();
-
-foreach (range(1,5) as $r){
-    $p = new \React\Promise\Deferred();
-
-    $loop->addTimer($r,function ()use ($p,$r){
-        $p->resolve($r);
-    });
-
-    $p->promise()->then(function ($r){
-        echo $r;
-    });
-}
-
-$loop->run();
-
-dd(now()->timestamp-$start);
+    Artisan::call('php artisan trader:symbol BTC:USDT 100');
 });

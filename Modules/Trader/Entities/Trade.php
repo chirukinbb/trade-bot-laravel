@@ -12,8 +12,8 @@ class Trade
         string $symbol,
         private array $orderBook,
         private array $links,
-        float $fee = 0,
-        float $maxVolume = 0,
+        private float $maxVolume = 0,
+        private float $fee = 0,
     )
     {
         $this->symbol = explode(':',$symbol);
@@ -23,14 +23,14 @@ class Trade
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
         // сведение к минимальному обьему
-        $volume = max(min([$this->buy['total']['volume'], $this->sell['total']['volume']]) - $fee,0);
-        $volume = min($volume,$maxVolume);
+        $volume = max(min([$this->buy['total']['volume'], $this->sell['total']['volume']]),0);
 
         $this->buy['total']['volume'] = $volume;
         $this->sell['total']['volume'] = $volume;
 
         $this->calculatePricesAndVolumes('sell');
         $this->calculatePricesAndVolumes('buy');
+        dd($this->orderBook);
     }
 
     public function message()
@@ -61,22 +61,34 @@ class Trade
     private function calculatePricesAndVolumes(string $direction)
     {
         // обьем, который нужно сьесть
-        $restVolume = $this->{$direction}['total']['volume'];
+        $restBaseVolume = $this->{$direction}['total']['volume'];
+        $restQuoteVolume = $this->maxVolume;
         $this->{$direction}['total']['quote'] = 0;
+        $this->{$direction}['total']['volume'] = 0;
         // расчет конечной цены
         // действие повторяетчя пока не сьест ввесь обьем
         foreach ($this->{$direction}['book'] as $book) {
-            if ($restVolume > 0){
-                // сравнивает оставшийся обьем и обьем текущего ордера, берет меньший
-                $volume = min([$restVolume,$book['value']]);
-                // вычитает выбранный обьем из осавшегося
-                $restVolume -= $volume;
-                // считает обьем quote coin в сьеденом обьеме ордера
-                $this->{$direction}['total']['quote'] += $volume * $book['price'];
+            if ($restBaseVolume > 0 && $restQuoteVolume > 0){
+                // сравнивает оставшийся обьем и обьем текущего ордера(base coin), берет меньший
+                $baseVolume = min([$restBaseVolume,$book['value']]);
+                // считает обьем quote coin в сьедаемом обьеме ордера и сравниваем с лимитом
+                $quoteVolume = min($baseVolume * $book['price'],$restQuoteVolume);
+                // если обьем второго коина меньше - пересчитать базовую
+                if ($baseVolume * $book['price'] !== $quoteVolume){
+                    $baseVolume = $quoteVolume / $book['price'];
+                }
+                // оставшийся обьем второго коина
+                $restQuoteVolume -= $quoteVolume;
+                // вычитает выбранный обьем из осавшегося(база-коин)
+                $restBaseVolume -= $baseVolume;
+                // купленный квот-коин
+                $this->{$direction}['total']['quote'] += $quoteVolume;
+                // обменянный база-коин
+                $this->{$direction}['total']['volume'] += $baseVolume;
                 // записывает(перезаписывает) цену текущего ордера как конечную цену
                 $this->{$direction}['total']['price']['end'] = $book['price'];
             }
-        }
+        }dump($this->{$direction});
     }
 
     private function setBookFromAnotherExchange(string $direction)
