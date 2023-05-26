@@ -6,10 +6,7 @@ use Illuminate\Console\Command;
 use Modules\Signal\Entities\Deal;
 use Modules\Signal\Entities\Signal;
 use Modules\Symbol\Entities\Symbol;
-use Modules\Symbol\Exchanges\Exchange;
 use Modules\Trader\Entities\Trade;
-use React\EventLoop\Factory;
-use React\EventLoop\Loop;
 use function env;
 
 class ExampleExchangeCommand extends Command

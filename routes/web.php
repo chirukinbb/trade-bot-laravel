@@ -25,5 +25,5 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-    Artisan::call('php artisan trader:symbol BTC:USDT 100');
+    Artisan::call('trader:symbol BTC:USDT 100');
 });

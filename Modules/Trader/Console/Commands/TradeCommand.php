@@ -5,12 +5,8 @@ namespace Modules\Trader\Console\Commands;
 use Illuminate\Console\Command;
 use Modules\Signal\Entities\Deal;
 use Modules\Signal\Entities\Signal;
-use Modules\Symbol\Entities\Symbol;
 use Modules\Symbol\Exchanges\Binance;
 use Modules\Trader\Entities\Trade;
-use React\EventLoop\Factory;
-use React\EventLoop\Loop;
-use React\Promise\Deferred;
 use function config;
 
 class TradeCommand extends Command
@@ -34,13 +30,11 @@ class TradeCommand extends Command
      */
     public function handle()
     {
-        $m = memory_get_usage();
+        $mem_start = memory_get_usage();
         $exchanges = [];
         $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
         $symbol = $this->argument('symbol');
         $volume = $this->argument('volume');
-
-        \Log::info($symbol);
 
         if (is_null($symbol)){
             return 1;
@@ -62,9 +56,9 @@ class TradeCommand extends Command
         }
 
         if (!empty($book)) {
-            $trade = new Trade($symbol, $book, $links,$volume,(new Binance())->withdrawalFee(explode(':',$symbol)[1]));
+            $trade = new Trade($symbol, $book, $links,$volume,(new Binance())->withdrawalFee(explode(':',$symbol)[0]));
 
-            if (true/*$trade->relativeProfit() > env('TARGET_PROFIT')*/) {
+            if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
 
                 if (env('IS_TRADING_ENABLED') == 1) {
                     $sell = $trade->sell();
@@ -107,7 +101,6 @@ class TradeCommand extends Command
             }
         }
 
-        \Log::info($symbol);
-        \Log::info(memory_get_usage()-$m);
+        \Log::info(memory_get_usage() - $mem_start);
     }
 }

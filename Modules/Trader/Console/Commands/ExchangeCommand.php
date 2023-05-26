@@ -3,17 +3,10 @@
 namespace Modules\Trader\Console\Commands;
 
 use Illuminate\Console\Command;
-use Modules\Signal\Entities\Deal;
-use Modules\Signal\Entities\Signal;
 use Modules\Symbol\Entities\Symbol;
-use Modules\Trader\Entities\Trade;
-use React\EventLoop\Factory;
 use React\EventLoop\Loop;
-use React\Promise\Deferred;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
-use function config;
 
 class ExchangeCommand extends Command
 {

@@ -11,6 +11,8 @@ use Modules\Symbol\Exchanges\Exchange;
 use Modules\Trader\Entities\Trade;
 use React\EventLoop\Factory;
 use React\EventLoop\Loop;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
 use function env;
 use function Webmozart\Assert\Tests\StaticAnalysis\float;
 
@@ -35,16 +37,24 @@ class Example2ExchangeCommand extends Command
      */
     public function handle()
     {
-        $binance = new  Binance();
+        $loop = Loop::get();
 
-        $time_start0 = microtime(true);
-        $mem_start = memory_get_usage();
+        $phpBinaryFinder = new PhpExecutableFinder();
+        $phpBinaryPath = $phpBinaryFinder->find();
 
-        $book = $binance->isSymbolOnline('BTC:USDT');
+        $loop->addPeriodicTimer(2,function ()use ($phpBinaryPath){
+            $proc = new Process([$phpBinaryPath,'trader.php','ddd',1]);
+
+            $proc->start();
+        });
+
+        $loop->addPeriodicTimer(1,function ()use ($phpBinaryPath){
+            $proc = new Process([$phpBinaryPath,'trader.php','ggg',3]);
+
+            $proc->start();
+        });
 
 
-        echo microtime(true) - $time_start0;
-        echo '/';
-        echo memory_get_usage() - $mem_start;
+        $loop->run();
     }
 }
