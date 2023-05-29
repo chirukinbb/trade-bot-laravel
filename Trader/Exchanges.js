@@ -1,11 +1,11 @@
-const config = require('config');
+const config = require('./config');
 
 class Exchange {
     constructor() {
         this.name = 'exchange';
     }
 
-    isSymbolOnline(symbol) {
+    async isSymbolOnline(symbol) {
         throw new Error('Method isSymbolOnline() must be implemented');
     }
 
@@ -18,8 +18,7 @@ class Exchange {
     }
 
     normalize(symbol) {
-        symbol = symbol.replace(':', config.get('symbol.exchanges.' + this.name + '.separator')) + config.get('symbol.exchanges.' + this.name + '.suffix');
-        return config['symbol.exchanges.' + this.name + '.lowercase'] ? symbol.toLowerCase() : symbol;
+        return symbol.replace(':', '');
     }
 
     link(symbol) {
@@ -28,16 +27,19 @@ class Exchange {
     }
 
     extractBook(data) {
-        const book = {};
+        const book = {
+            asks:[],
+            bids:[]
+        };
         let i = 0;
         const count = Math.min(data['asks'].length, data['bids'].length);
 
         while (i < count) {
-            book['asks'].push({
+            book.asks.push({
                 'price': data['asks'][i][0],
                 'value': data['asks'][i][1]
             });
-            book['bids'].push({
+            book.bids.push({
                 'price': data['bids'][i][0],
                 'value': data['bids'][i][1]
             });

@@ -30,7 +30,6 @@ class TradeCommand extends Command
      */
     public function handle()
     {
-        $mem_start = memory_get_usage();
         $exchanges = [];
         $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
         $symbol = $this->argument('symbol');
@@ -100,7 +99,5 @@ class TradeCommand extends Command
                 ]);
             }
         }
-
-        \Log::info(memory_get_usage() - $mem_start);
     }
 }

@@ -25,5 +25,7 @@ use Modules\Trader\Entities\Trade;
 */
 
 Route::get('e',function (){
-    Artisan::call('trader:symbol BTC:USDT 100');
+    sleep(request('sleep'));
+
+    return response()->json(request('ret'));
 });

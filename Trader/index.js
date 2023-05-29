@@ -1,3 +1,12 @@
-const {Binance} = require("./Exchanges/Binance");
+const Binance = require("./Exchanges/Binance");
 
-console.log((new Binance).isSymbolOnline('BTC:USDT'))
+let binance = new Binance
+
+async function check() {
+      let  data = await binance.withdrawalFee('BTC')
+    console.log(data)
+    console.log(performance.now()-t)
+}
+
+t=performance.now()
+check()
