@@ -13,6 +13,10 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::any('home',function (){
+    return redirect()->route('login');
+});
+
 Route::get('/',[\Modules\User\Http\Controllers\PageController::class,'login'])->name('login');
 Route::get('logout',[\Modules\User\Http\Controllers\ActionController::class,'logout'])->name('logout');
 Route::post('login',[\Modules\User\Http\Controllers\ActionController::class,'login'])->name('login.action');

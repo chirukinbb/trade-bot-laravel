@@ -14,7 +14,7 @@
                 <form class="input-group">
                     <select name="period" class="form-control" onchange="$(this).closest('form').submit()">
                         @foreach($periods as $key=>$period)
-                            <option value="{{$key}}">{{$period}}</option>
+                            <option value="{{$key}}" @selected(request('period') == $key)>{{$period}}</option>
                         @endforeach
                     </select>
                 </form>

@@ -12,29 +12,21 @@ use Lin\Ku\Kucoin;
 use Lin\Mxc\MxcSpot;
 use Modules\Symbol\Entities\Symbol;
 use Modules\Symbol\Http\Requests\SymbolRequest;
+use Modules\Symbol\Http\Resources\SymbolResource;
+use Modules\Symbol\Repositories\SymbolRepository;
 
 class ActionController extends Controller
 {
+    public function __construct(private SymbolRepository $symbolRepository)
+    {
+    }
+
     public function symbols()
     {
-        $symbols = [];
-        $activeSymbols = [];
+        $data = $this->symbolRepository->fromExchanges();
+        extract($data);
+        $activeSymbols = $this->symbolRepository->allNames();
         $data = [];
-        $pivotSymbols = [];
-
-        foreach (config('symbol.exchanges') as $exchange  => $data) {
-            $symbols[$exchange] = call_user_func([new $data['adapter'],'symbols']);
-
-            foreach ($symbols[$exchange] as $symbol) {
-                if (!in_array($symbol,$pivotSymbols)){
-                    $pivotSymbols[] = $symbol;
-                }
-            }
-        }
-
-        Symbol::each(function (Symbol $symbol) use (&$activeSymbols){
-            $activeSymbols[] = $symbol->name;
-        });
 
         foreach ($pivotSymbols as $symbol){
             $exchanges = [];
@@ -53,7 +45,7 @@ class ActionController extends Controller
             ];
         }
 
-        return response()->json(compact('data'));
+        return SymbolResource::make($data);
     }
 
     public function store(SymbolRequest $request)
