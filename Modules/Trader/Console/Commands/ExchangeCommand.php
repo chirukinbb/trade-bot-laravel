@@ -40,6 +40,6 @@ class ExchangeCommand extends Command
             });
         });
 
-        //$loop->run();
+        $loop->run();
     }
 }
