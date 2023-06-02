@@ -36,6 +36,7 @@ class TradeCommand extends Command
         $symbol = $this->argument('symbol');
         $volume = $this->argument('volume');
         $number = $this->argument('proxy_number');
+        \Log::info($symbol);
 
         if (is_null($symbol)){
             return 1;
