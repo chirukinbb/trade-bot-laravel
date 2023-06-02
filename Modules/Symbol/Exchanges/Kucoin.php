@@ -7,21 +7,26 @@ class Kucoin extends Exchange
     protected object $sdk;
     protected string $name = 'kucoin';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk = new \Lin\Ku\Kucoin(env('KUCOIN_API_KEY',''),env('KUCOIN_API_SECRET',''));
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://api.kucoin.com/api/v1/symbols');
+
         return array_map(function ($symbol) {
             return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, $this->sdk->market()->getSymbols()['data']);
+        }, json_decode($symbols->body(),true)['data']);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->market()->getSymbols()['data'],function ($data) use ($symbol){
+        $symbols = $this->http->get('https://api.kucoin.com/api/v1/symbols');
+
+        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
             return $data['name'] === $this->normalize($symbol);
         });
 
@@ -30,9 +35,9 @@ class Kucoin extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data  = $this->sdk->market()->getOrderBookLevel2_100(['symbol'=>$this->normalize($symbol)])['data'];
+        $data  = $this->http->get('https://api.kucoin.com/api/v1/market/orderbook/level2_100?'.http_build_query(['symbol'=>$this->normalize($symbol)]));
 
-        return $this->extractBook($data);
+        return $this->extractBook(json_decode($data->body(),true)['data']);
     }
 
     public function sendOrder(array $data): array

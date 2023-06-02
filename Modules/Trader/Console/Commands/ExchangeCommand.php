@@ -34,12 +34,12 @@ class ExchangeCommand extends Command
         $phpBinaryFinder = new PhpExecutableFinder();
         $phpBinaryPath = $phpBinaryFinder->find();
 
-        Symbol::each(function (Symbol $symbol) use ($loop,$phpBinaryPath){
-            $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($symbol,$phpBinaryPath){
-                (new Process([$phpBinaryPath,base_path('artisan'),'trader:symbol',$symbol->name,$symbol->volume]))->start();
+        Symbol::each(function (Symbol $symbol,int $i) use ($loop,$phpBinaryPath){
+            $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($symbol,$phpBinaryPath,$i){
+                (new Process([$phpBinaryPath,base_path('artisan'),'trader:symbol',$symbol->name,$symbol->volume,intdiv($i,250)]))->start();
             });
         });
 
-        $loop->run();
+        //$loop->run();
     }
 }

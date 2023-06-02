@@ -9,8 +9,7 @@ class Binance extends Exchange {
         this.sdk = new MainClient({
             api_key: process.env.BINANCE_API_KEY,
             api_secret: process.env.BINANCE_API_SECRET
-        });
-        this.name = 'binance';
+        })
     }
 
     async isSymbolOnline(symbol) {

@@ -16,7 +16,7 @@ class TradeCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'trader:symbol {symbol} {volume}';
+    protected $signature = 'trader:symbol {symbol} {volume} {proxy_number}';
 
     /**
      * The console command description.
@@ -30,10 +30,12 @@ class TradeCommand extends Command
      */
     public function handle()
     {
+        $start = microtime(true);
         $exchanges = [];
         $tgBot = new \Telegram\Bot\Api(env('TELEGRAM_BOT_TOKEN'));
         $symbol = $this->argument('symbol');
         $volume = $this->argument('volume');
+        $number = $this->argument('proxy_number');
 
         if (is_null($symbol)){
             return 1;
@@ -43,7 +45,7 @@ class TradeCommand extends Command
         $links = [];
 
         foreach (config('symbol.exchanges') as $exchange => $data){
-            $exchanges[$exchange] = ['adapter'=>new $data['adapter']];
+            $exchanges[$exchange] = ['adapter'=>new $data['adapter'](config('symbol.proxies')[$number])];
             $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol);
         }
 
@@ -55,7 +57,7 @@ class TradeCommand extends Command
         }
 
         if (!empty($book)) {
-            $trade = new Trade($symbol, $book, $links,$volume,(new Binance())->withdrawalFee(explode(':',$symbol)[0]));
+            $trade = new Trade($symbol, $book, $links,$volume,(new Binance(config('symbol.proxies')[$number]))->withdrawalFee(explode(':',$symbol)[0]));
 
             if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
 
@@ -99,5 +101,8 @@ class TradeCommand extends Command
                 ]);
             }
         }
+
+        \Log::info($symbol);
+        \Log::info(microtime(true) - $start);
     }
 }

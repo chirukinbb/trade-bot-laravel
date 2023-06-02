@@ -67,5 +67,43 @@ return [
             'link'=>'https://www.bybit.com/en-US/trade/spot/{symbol}',
             'suffix'=>''
         ],
+    ],
+    'proxies'=>[
+        [
+            'address' => '45.154.231.127',
+            'port' => '8000',
+            'user' => 'h7h2Pe',
+            'pass' => 'WqmY4F'
+        ],
+        [
+            'address' => '45.154.231.232',
+            'port' => '8000',
+            'user' => 'h7h2Pe',
+            'pass' => 'WqmY4F'
+        ],
+        [
+            'address' => '196.18.14.163',
+            'port' => '8000',
+            'user' => 'VGsyR7',
+            'pass' => 'vYyJ2Z'
+        ],
+        [
+            'address' => '196.18.14.56',
+            'port' => '8000',
+            'user' => 'VGsyR7',
+            'pass' => 'vYyJ2Z'
+        ],
+        [
+            'address' => '196.17.223.159',
+            'port' => '8000',
+            'user' => 'VGsyR7',
+            'pass' => 'vYyJ2Z'
+        ],
+        [
+            'address' => '45.154.231.127',
+            'port' => '8000',
+            'user' => 'h7h2Pe',
+            'pass' => 'WqmY4F'
+        ],
     ]
 ];

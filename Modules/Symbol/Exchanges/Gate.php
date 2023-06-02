@@ -10,22 +10,26 @@ class Gate extends Exchange
     protected object $sdk;
     protected string $name = 'gate';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk = new GateSpotV2(env('GATE_API_KEY',''),env('GATE_API_SECRET',''));
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://api.gateio.la/api2/1/pairs');
+
         return array_map(function ($symbol) {
             return str_replace('_',':',strtoupper($symbol));
-        }, $this->sdk->publics()->pairs());
+        }, json_decode($symbols->body(),true));
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
         try {
-            $data  = json_decode(file_get_contents('https://api.gateio.ws/api/v4/margin/currency_pairs'));
+            $symbols = $this->http->get('https://api.gateio.ws/api/v4/margin/currency_pairs');
+            $data  = json_decode($symbols->body(),true);
 
             $symbolData = array_filter($data,function ($data) use ($symbol){
                 return $data->id === str_replace(':','_',$symbol);
@@ -38,9 +42,9 @@ class Gate extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = (array) json_decode(file_get_contents('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit='.env('DEPTH')));
+        $data = $this->http->get(('https://api.gateio.ws/api/v4/spot/order_book?currency_pair='.$this->normalize($symbol).'&limit='.env('DEPTH')));
 
-        return $this->extractBook($data);
+        return $this->extractBook(json_decode($data->body(),true));
     }
 
     public function sendOrder(array $data): array

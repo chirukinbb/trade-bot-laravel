@@ -10,21 +10,26 @@ class Huobi extends Exchange
     protected object $sdk;
     protected string $name = 'huobi';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk  = new HuobiSpot(env('HUOBI_API_KEY',''),env('HUOBI_API_SECRET',''));
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://api.huobi.pro/v1/common/symbols');
+
         return array_map(function ($symbol) {
             return strtoupper($symbol['base-currency'].':'.$symbol['quote-currency']);
-        }, $this->sdk->common()->getSymbols()['data']);
+        }, json_decode($symbols->body(),true)['data']);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->common()->getSymbols()['data'],function ($data) use ($symbol){
+        $symbols = $this->http->get('https://api.huobi.pro/v1/common/symbols');
+
+        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -33,9 +38,9 @@ class Huobi extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>20])['tick'];
+        $data = $this->http->get('https://api.huobi.pro/market/depth?'.http_build_query(['symbol'=>$this->normalize($symbol),'depth'=>20,'type'=>'step0']));
 
-        return $this->extractBook($data);
+        return $this->extractBook(json_decode($data->body(),true)['tick']);
     }
 
     public function sendOrder(array $data): array

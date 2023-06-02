@@ -2,9 +2,22 @@
 
 namespace Modules\Symbol\Exchanges;
 
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Http;
+
 abstract class Exchange
 {
     protected string $name = 'exchange';
+    protected PendingRequest $http;
+
+    public function __construct(array $proxy)
+    {
+        $this->http = Http::withOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}"
+            ]
+        ]);
+    }
 
     abstract public function symbols(): array;
     abstract public function isSymbolOnline(string $symbol): bool;

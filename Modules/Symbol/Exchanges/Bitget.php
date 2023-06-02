@@ -2,6 +2,7 @@
 
 namespace Modules\Symbol\Exchanges;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Lin\Bitget\BitgetSpot;
 
@@ -10,23 +11,27 @@ class Bitget extends Exchange
     protected object $sdk;
     protected string $name = 'bitget';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk  = new BitgetSpot(env('BITGET_API_KEY',''),env('BITGET_API_SECRET',''));
-        //dd($this->sdk->common()->getSymbols());
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
+
         return array_map(function ($symbol) {
-            return $symbol->baseCoin.':'.$symbol->quoteCoin;
-        }, (array)json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl'))->data);
+            return $symbol['baseCoin'].':'.$symbol['quoteCoin'];
+        }, json_decode($symbols->body(),true)['data']);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter((array)json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl'))->data,function ($data) use ($symbol){
-            return $data->baseCoin.$data->quoteCoin === $this->normalize($symbol);
+        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
+
+        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+            return $data['baseCoin'].$data['quoteCoin'] === $this->normalize($symbol);
         });
 
         return !empty($symbolData) && end($symbolData)->symbolStatus === 'normal';
@@ -34,7 +39,7 @@ class Bitget extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = json_decode(file_get_contents('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH')),true)['data'];
+        $data = json_decode($this->http->get('https://api.bitget.com/api/mix/v1/market/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH'))->body(),true)['data'];
 
         return $this->extractBook($data);
     }

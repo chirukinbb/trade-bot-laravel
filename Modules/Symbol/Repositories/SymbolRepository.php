@@ -19,7 +19,7 @@ class SymbolRepository
         $pivotSymbols = [];
 
         foreach (config('symbol.exchanges') as $exchange  => $data) {
-            $symbols[$exchange] = call_user_func([new $data['adapter'],'symbols']);
+            $symbols[$exchange] = call_user_func([new $data['adapter'](config('symbol.proxies.0')),'symbols']);
 
             foreach ($symbols[$exchange] as $symbol) {
                 if (!in_array($symbol,$pivotSymbols)){

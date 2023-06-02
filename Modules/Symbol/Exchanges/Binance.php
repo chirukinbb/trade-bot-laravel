@@ -10,15 +10,16 @@ class Binance extends Exchange
     protected object $sdk;
     protected string $name = 'binance';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
-        $this->sdk = new API(env('BINANCE_API_KEY'),env('BINANCE_API_SECRET'));
+        $this->sdk = new API(env('BINANCE_API_KEY'), env('BINANCE_API_SECRET'));
+        $this->sdk->setProxy(array_merge($proxy,['proto'=>'https']));
     }
 
     public function symbols(): array
     {
-        $symbols = array_filter($this->sdk->exchangeInfo()['symbols'],function ($symbol){
-            return in_array('MARGIN',$symbol['permissions']);
+        $symbols = array_filter($this->sdk->exchangeInfo()['symbols'], function ($symbol) {
+            return in_array('MARGIN', $symbol['permissions']);
         });
 
         return array_map(function ($symbol) {
@@ -28,7 +29,7 @@ class Binance extends Exchange
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->exchangeInfo()['symbols'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->sdk->exchangeInfo()['symbols'], function ($data) use ($symbol) {
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -37,20 +38,20 @@ class Binance extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->depth($this->normalize($symbol),env('DEPTH'));
+        $data = $this->sdk->depth($this->normalize($symbol), env('DEPTH'));
 
         return $this->extractBook($data);
     }
 
     public function sendOrder(array $data): array
     {
-        $data = Http::post('https://testnet.binance.vision/sapi/v1/margin/order',[
-            'symbol'=>$data['symbol'],
-            'quantity'=>$data['volume'],
-            'side'=>$data['side'],
-            'type'=>'MARKET',
-            'timestamp'=>now()->timestamp,
-            'signature'=>hash_hmac('sha256',http_build_query($data),env('BINANCE_API_SECRET'))
+        $data = Http::post('https://testnet.binance.vision/sapi/v1/margin/order', [
+            'symbol' => $data['symbol'],
+            'quantity' => $data['volume'],
+            'side' => $data['side'],
+            'type' => 'MARKET',
+            'timestamp' => now()->timestamp,
+            'signature' => hash_hmac('sha256', http_build_query($data), env('BINANCE_API_SECRET'))
         ]);
 
         return json_decode($data->body())->orderId;
@@ -58,39 +59,43 @@ class Binance extends Exchange
 
     public function order(array $data)
     {
-        $data = json_decode(Http::post('https://testnet.binance.vision/api/v3/order',[
-            'symbol'=>$data['symbol'],
-            'orderId'=>$data['orderId'],
-            'timestamp'=>now()->timestamp,
-            'signature'=>hash_hmac('sha256',http_build_query($data),env('BINANCE_API_SECRET'))
-        ])->body(),true);
+        $data = json_decode(Http::post('https://testnet.binance.vision/api/v3/order', [
+            'symbol' => $data['symbol'],
+            'orderId' => $data['orderId'],
+            'timestamp' => now()->timestamp,
+            'signature' => hash_hmac('sha256', http_build_query($data), env('BINANCE_API_SECRET'))
+        ])->body(), true);
 
         return [
-            'volume'=>$data['origQty'],
-            'price'=>$data['price'],
-            'side'=>$data['side']
+            'volume' => $data['origQty'],
+            'price' => $data['price'],
+            'side' => $data['side']
         ];
     }
 
     public function withdrawalFee(string $coin)
     {
-        return $this->sdk->withdrawFee($coin)['withdrawFee'];
+        try {
+            return $this->sdk->withdrawFee($coin)['withdrawFee'];
+        }catch (\Exception $exception){
+            return 0;
+        }
     }
 
     protected function extractBook(array $data)
     {
         $book = [];
         $i = 0;
-        $count = min(count($data['asks']),count($data['bids']));
+        $count = min(count($data['asks']), count($data['bids']));
 
-        while ($i < $count){
+        while ($i < $count) {
             $book['asks'][] = [
-                'price'=>($key = array_keys($data['asks'])[$i]),
-                'value'=>$data['asks'][$key],
+                'price' => ($key = array_keys($data['asks'])[$i]),
+                'value' => $data['asks'][$key],
             ];
             $book['bids'][] = [
-                'price'=>($key = array_keys($data['bids'])[$i]),
-                'value'=>$data['bids'][$key],
+                'price' => ($key = array_keys($data['bids'])[$i]),
+                'value' => $data['bids'][$key],
             ];
 
             $i++;

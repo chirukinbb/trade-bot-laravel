@@ -2,6 +2,7 @@
 
 namespace Modules\Symbol\Exchanges;
 
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Lin\Bybit\BybitSpot;
 
@@ -10,21 +11,26 @@ class Bybit extends Exchange
     protected object $sdk;
     protected string $name = 'bybit';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk = new BybitSpot(env('BYBIT_API_KEY',''),env('BYBIT_API_SECRET',''));
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
+
         return array_map(function ($symbol) {
             return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, $this->sdk->publics()->getSymbols()['result']);
+        }, json_decode($symbols->body(),true)['result']);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->publics()->getSymbols()['result'],function ($data) use ($symbol){
+        $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
+
+        $symbolData = array_filter(json_decode($symbols->body(),true)['result'],function ($data) use ($symbol){
             return $data['name'] === $this->normalize($symbol);
         });
 
@@ -33,9 +39,9 @@ class Bybit extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data = $this->sdk->publics()->getDepth(['symbol'=>$this->normalize($symbol),'limit'=>env('DEPTH')])['result'];
+        $data = $this->http->get('https://api.bybit.com/spot/quote/v1/depth?symbol='.$this->normalize($symbol).'&limit='.env('DEPTH'));
 
-        return $this->extractBook($data);
+        return $this->extractBook(json_decode($data->body(),true)['result']);
     }
 
     public function link(string $symbol)

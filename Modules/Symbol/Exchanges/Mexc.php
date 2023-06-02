@@ -9,21 +9,26 @@ class Mexc extends Exchange
     protected object $sdk;
     protected string $name = 'mxc';
 
-    public function __construct()
+    public function __construct(array $proxy)
     {
         $this->sdk = new MxcSpot(env('MXC_API_KEY') ?? '',env('MXC_API_SECRET') ?? '');
+        parent::__construct($proxy);
     }
 
     public function symbols(): array
     {
+        $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
+
         return array_map(function ($symbol) {
             return str_replace('_',':',$symbol['symbol']);
-        }, $this->sdk->market()->getSymbols()['data']);
+        }, json_decode($symbols->body(),true)['data']);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->market()->getSymbols()['data'],function ($data) use ($symbol){
+        $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
+
+        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -32,9 +37,9 @@ class Mexc extends Exchange
 
     public function orderBook(string $symbol): array
     {
-        $data  = $this->sdk->market()->getDepth(['symbol'=>$this->normalize($symbol),'depth'=>env('DEPTH')])['data'];
+        $data  = $this->http->get('https://www.mexc.com/open/api/v2/market/depth?'.http_build_query(['symbol'=>$this->normalize($symbol),'depth'=>env('DEPTH')]));
 
-        return $this->extractBook($data);
+        return $this->extractBook(json_decode($data->body(),true)['data']);
     }
 
     public function sendOrder(array $data): array

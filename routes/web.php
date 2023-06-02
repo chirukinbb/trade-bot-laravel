@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,7 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('e',function (){
-    sleep(request('sleep'));
-
-    return response()->json(request('ret'));
+    //dd(4);
+    dd((new \Modules\Symbol\Exchanges\OKX(config('symbol.proxies.0')))->isSymbolOnline('BTC:USDT'));
 });
