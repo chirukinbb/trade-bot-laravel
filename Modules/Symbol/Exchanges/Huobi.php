@@ -10,7 +10,7 @@ class Huobi extends Exchange
     protected object $sdk;
     protected string $name = 'huobi';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk  = new HuobiSpot(env('HUOBI_API_KEY',''),env('HUOBI_API_SECRET',''));
         parent::__construct($proxy);
@@ -18,18 +18,15 @@ class Huobi extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://api.huobi.pro/v1/common/symbols');
 
         return array_map(function ($symbol) {
             return strtoupper($symbol['base-currency'].':'.$symbol['quote-currency']);
-        }, json_decode($symbols->body(),true)['data']);
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://api.huobi.pro/v1/common/symbols');
-
-        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -76,5 +73,12 @@ class Huobi extends Exchange
             'side'=>$side[0],
             'status'=>$order['state'],
         ];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://api.huobi.pro/v1/common/symbols');
+
+        return json_decode($symbols->body(),true)['data'];
     }
 }

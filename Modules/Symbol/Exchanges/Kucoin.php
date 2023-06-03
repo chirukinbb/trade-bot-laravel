@@ -7,7 +7,7 @@ class Kucoin extends Exchange
     protected object $sdk;
     protected string $name = 'kucoin';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new \Lin\Ku\Kucoin(env('KUCOIN_API_KEY',''),env('KUCOIN_API_SECRET',''));
         parent::__construct($proxy);
@@ -15,18 +15,14 @@ class Kucoin extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://api.kucoin.com/api/v1/symbols');
-
         return array_map(function ($symbol) {
             return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, json_decode($symbols->body(),true)['data']);
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://api.kucoin.com/api/v1/symbols');
-
-        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['name'] === $this->normalize($symbol);
         });
 
@@ -66,5 +62,12 @@ class Kucoin extends Exchange
             'side'=>$order['side'],
             'status'=>$order['active'],
         ];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://api.kucoin.com/api/v1/symbols');
+
+        return json_decode($symbols->body(),true)['data'];
     }
 }

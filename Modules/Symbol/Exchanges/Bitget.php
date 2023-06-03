@@ -2,7 +2,6 @@
 
 namespace Modules\Symbol\Exchanges;
 
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Lin\Bitget\BitgetSpot;
 
@@ -11,7 +10,7 @@ class Bitget extends Exchange
     protected object $sdk;
     protected string $name = 'bitget';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk  = new BitgetSpot(env('BITGET_API_KEY',''),env('BITGET_API_SECRET',''));
         parent::__construct($proxy);
@@ -19,18 +18,14 @@ class Bitget extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
-
         return array_map(function ($symbol) {
             return $symbol['baseCoin'].':'.$symbol['quoteCoin'];
-        }, json_decode($symbols->body(),true)['data']);
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
-
-        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['baseCoin'].$data['quoteCoin'] === $this->normalize($symbol);
         });
 
@@ -94,5 +89,12 @@ class Bitget extends Exchange
         ),env('BITGET_API_SECRET')),
             'ACCESS-KEY'=>env('BITGET_API_KEY'),
             'ACCESS-TIMESTAMP'=>$ts];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
+
+        return json_decode($symbols->body(),true)['data'];
     }
 }

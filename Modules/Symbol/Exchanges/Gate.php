@@ -10,7 +10,7 @@ class Gate extends Exchange
     protected object $sdk;
     protected string $name = 'gate';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new GateSpotV2(env('GATE_API_KEY',''),env('GATE_API_SECRET',''));
         parent::__construct($proxy);
@@ -18,23 +18,18 @@ class Gate extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://api.gateio.la/api2/1/pairs');
-
         return array_map(function ($symbol) {
             return str_replace('_',':',strtoupper($symbol));
-        }, json_decode($symbols->body(),true));
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
         try {
-            $symbols = $this->http->get('https://api.gateio.ws/api/v4/margin/currency_pairs');
-            $data  = json_decode($symbols->body(),true);
-
-            $symbolData = array_filter($data,function ($data) use ($symbol){
+            $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
                 return $data->id === str_replace(':','_',$symbol);
             });
-        return !empty($symbolData) && array_shift($symbolData)->ststus === 1;
+        return !empty($symbolData) && array_shift($symbolData)['status'] === 1;
         }catch (\Exception $exception){
             return false;
         }
@@ -99,5 +94,12 @@ class Gate extends Exchange
             'Timestamp' => $t,
             'SIGN' => $sign
         ];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://api.gateio.ws/api/v4/margin/currency_pairs');
+
+        return json_decode($symbols->body(),true);
     }
 }

@@ -10,7 +10,7 @@ class Binance extends Exchange
     protected object $sdk;
     protected string $name = 'binance';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new API(env('BINANCE_API_KEY'), env('BINANCE_API_SECRET'));
         $this->sdk->setProxy(array_merge($proxy,['proto'=>'https']));
@@ -18,7 +18,7 @@ class Binance extends Exchange
 
     public function symbols(): array
     {
-        $symbols = array_filter($this->sdk->exchangeInfo()['symbols'], function ($symbol) {
+        $symbols = array_filter($this->symbolData(), function ($symbol) {
             return in_array('MARGIN', $symbol['permissions']);
         });
 
@@ -29,7 +29,7 @@ class Binance extends Exchange
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbolData = array_filter($this->sdk->exchangeInfo()['symbols'], function ($data) use ($symbol) {
+        $symbolData = array_filter($this->symbolData, function ($data) use ($symbol) {
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -102,5 +102,10 @@ class Binance extends Exchange
         }
 
         return $book;
+    }
+
+    public function symbolData()
+    {
+        return$this->sdk->exchangeInfo()['symbols'];
     }
 }

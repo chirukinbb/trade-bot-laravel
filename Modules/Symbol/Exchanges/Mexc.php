@@ -9,7 +9,7 @@ class Mexc extends Exchange
     protected object $sdk;
     protected string $name = 'mxc';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new MxcSpot(env('MXC_API_KEY') ?? '',env('MXC_API_SECRET') ?? '');
         parent::__construct($proxy);
@@ -17,18 +17,14 @@ class Mexc extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
-
         return array_map(function ($symbol) {
             return str_replace('_',':',$symbol['symbol']);
-        }, json_decode($symbols->body(),true)['data']);
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
-
-        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['symbol'] === $this->normalize($symbol);
         });
 
@@ -91,5 +87,12 @@ class Mexc extends Exchange
         }
 
         return $book;
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
+
+        return json_decode($symbols->body(),true)['data'];
     }
 }

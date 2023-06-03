@@ -16,5 +16,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('e',function (){
     //dd(4);
-    dd((new \Modules\Symbol\Exchanges\OKX(config('symbol.proxies.0')))->isSymbolOnline('BTC:USDT'));
+    dd((new \Modules\Symbol\Exchanges\Binance(config('symbol.proxies.0')))->symbolData());
 });

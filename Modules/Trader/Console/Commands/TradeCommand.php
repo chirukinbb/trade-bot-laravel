@@ -44,9 +44,10 @@ class TradeCommand extends Command
 
         $book = [];
         $links = [];
+        $symbolData = json_decode(\Storage::get('symbols.json'),true);
 
         foreach (config('symbol.exchanges') as $exchange => $data){
-            $exchanges[$exchange] = ['adapter'=>new $data['adapter'](config('symbol.proxies')[$number])];
+            $exchanges[$exchange] = ['adapter'=>new $data['adapter'](config('symbol.proxies')[$number],$symbolData[$exchange])];
             $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol);
         }
 
@@ -60,11 +61,12 @@ class TradeCommand extends Command
         if (!empty($book)) {
             $trade = new Trade($symbol, $book, $links,$volume,(new Binance(config('symbol.proxies')[$number]))->withdrawalFee(explode(':',$symbol)[0]));
 
-            if ($trade->relativeProfit() > env('TARGET_PROFIT')) {
+            $sell = $trade->sell();
+            $buy = $trade->buy();
+
+            if ($trade->relativeProfit() > env('TARGET_PROFIT') && $sell['exchange'] !== $buy['exchange']) {
 
                 if (env('IS_TRADING_ENABLED') == 1) {
-                    $sell = $trade->sell();
-                    $buy = $trade->buy();
                     $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder($sell);
                     $buyOrderId = $exchanges[$buy['exchange']]['adapter']->sendOrder($buy);
                 }

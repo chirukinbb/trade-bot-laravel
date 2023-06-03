@@ -34,12 +34,29 @@ class ExchangeCommand extends Command
         $phpBinaryFinder = new PhpExecutableFinder();
         $phpBinaryPath = $phpBinaryFinder->find();
 
-        Symbol::each(function (Symbol $symbol,int $i) use ($loop,$phpBinaryPath){
-            $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($symbol,$phpBinaryPath,$i){
+        $this->setSymbolData();
+
+        $loop->addPeriodicTimer(3600,function (){
+            $this->setSymbolData();
+        });
+
+        $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($phpBinaryPath){
+            Symbol::each(function (Symbol $symbol,int $i) use ($phpBinaryPath){
                 (new Process([$phpBinaryPath,base_path('artisan'),'trader:symbol',$symbol->name,$symbol->volume,intdiv($i,250)]))->start();
             });
         });
 
         $loop->run();
+    }
+
+    public function setSymbolData()
+    {
+        $data = [];
+
+        foreach (config('symbol.exchanges') as $exchange => $exchangeData){
+            $data[$exchange] = (new $exchangeData['adapter'](config('symbol.proxies.0')))->symbolData();
+        }
+
+        \Storage::put('symbols.json',json_encode($data));
     }
 }

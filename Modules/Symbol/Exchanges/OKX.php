@@ -9,7 +9,7 @@ class OKX extends Exchange
     protected object $sdk;
     protected string $name = 'okx';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new OkexSpot(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '');
         parent::__construct($proxy);
@@ -17,18 +17,15 @@ class OKX extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
-
         return array_map(function ($symbol) {
             $symbol = (array)$symbol;
             return $symbol['baseCcy'].':'.$symbol['quoteCcy'];
-        },json_decode($symbols->body(),true)['data']);
+        },$this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
-        $symbolData = array_filter(json_decode($symbols->body(),true)['data'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['instId'] === $this->normalize($symbol);
         });
 
@@ -68,5 +65,12 @@ class OKX extends Exchange
             'side'=>$data['side'],
             'status'=>true,
         ];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
+
+        return json_decode($symbols->body(),true)['data'];
     }
 }

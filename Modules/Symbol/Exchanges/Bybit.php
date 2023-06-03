@@ -2,7 +2,6 @@
 
 namespace Modules\Symbol\Exchanges;
 
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Lin\Bybit\BybitSpot;
 
@@ -11,7 +10,7 @@ class Bybit extends Exchange
     protected object $sdk;
     protected string $name = 'bybit';
 
-    public function __construct(array $proxy)
+    public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk = new BybitSpot(env('BYBIT_API_KEY',''),env('BYBIT_API_SECRET',''));
         parent::__construct($proxy);
@@ -19,18 +18,14 @@ class Bybit extends Exchange
 
     public function symbols(): array
     {
-        $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
-
         return array_map(function ($symbol) {
             return $symbol['baseCurrency'].':'.$symbol['quoteCurrency'];
-        }, json_decode($symbols->body(),true)['result']);
+        },$this->symbolData);
     }
 
     public function isSymbolOnline(string $symbol): bool
     {
-        $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
-
-        $symbolData = array_filter(json_decode($symbols->body(),true)['result'],function ($data) use ($symbol){
+        $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
             return $data['name'] === $this->normalize($symbol);
         });
 
@@ -92,5 +87,12 @@ class Bybit extends Exchange
             'X-BAPI-TIMESTAMP'=>now()->timestamp*1000,
             'X-BAPI-RECV-WINDOW'=>5000
         ];
+    }
+
+    public function symbolData()
+    {
+        $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
+
+        return json_decode($symbols->body(),true)['result'];
     }
 }
