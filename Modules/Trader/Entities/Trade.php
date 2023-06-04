@@ -18,6 +18,7 @@ class Trade
         $this->symbol = explode(':', $symbol);
         // биржи с лучшим предложением
         $this->setBetterPrices();
+        //dump($this->orderBook,$this->sell,$this->buy);
         // установка книги ордеров с противоположной биржы
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
@@ -124,7 +125,7 @@ class Trade
         $this->{$direction}['book'] = array_merge(
             $this->{$direction}['book'],
             array_reverse($this->orderBook[$this->{str_replace($direction, '',
-                'buysell')}['exchange']][($direction !== 'sell') ? 'bids' : 'asks'])
+                'buysell')}['exchange']][($direction === 'sell') ? 'bids' : 'asks'])
         );
         // установка стартовой цены для биржы
         $this->{$direction}['total'] = [
@@ -136,10 +137,12 @@ class Trade
         ];
         // уничтожение одеров, цена которых выходит из диапазона лучших цен
         foreach ($this->{$direction}['book'] as $book) {
-            $result = ($direction === 'sell') ? ($this->sell['book'][0]['price'] >= $book['price'] && $this->orderBook[$this->buy['exchange']]['asks'][0]['price'] < $book['price'])
-                : (($this->buy['book'][0]['price'] <= $book['price'] && $this->orderBook[$this->sell['exchange']]['bids'][0]['price'] > $book['price']));
+            $borders = ($direction == 'sell') ?
+                [$this->orderBook[$this->buy['exchange']]['asks'][0]['price'],$this->sell['book'][0]['price']] :
+                [$this->buy['book'][0]['price'],$this->orderBook[$this->sell['exchange']]['bids'][0]['price']];
 
-            if ($result) {
+
+            if ($this->inRage($borders,$book['price'])) {
                 $this->{$direction}['total']['volume'] += 0.996 * $book['value'];
             } else {
                 $index = array_search($book, $this->{$direction}['book']);
@@ -156,24 +159,24 @@ class Trade
         $asks = [];
         $bids = [];
         // заполнение массива ценами первых ордеров с каждой биржы в обеих направлениях
-        foreach ($this->orderBook as $exchange => $book) {
+        foreach ($this->orderBook as  $book) {
             $asks[] = $book['asks'][0]['price'];
             $bids[] = $book['bids'][0]['price'];
         }
         // выбор учшихцен
-        $maxAsk = max($asks);
-        $minBid = min($bids);
+        $maxAsk = min($asks);
+        $minBid = max($bids);
         // поиск бирж, предлогащих лучшие цены
         foreach ($this->orderBook as $exchange => $book) {
             if ($book['asks'][0]['price'] == $maxAsk) {
-                $this->sell = [
+                $this->buy = [
                     'exchange' => $exchange,
                     'book' => [$book['asks'][0]]
                 ];
             }
 
             if ($book['bids'][0]['price'] == $minBid) {
-                $this->buy = [
+                $this->sell = [
                     'exchange' => $exchange,
                     'book' => [$book['bids'][0]]
                 ];
@@ -261,5 +264,10 @@ class Trade
 
         $this->buy['total']['volume'] = $volume;
         $this->sell['total']['volume'] = $volume;
+    }
+
+    private function inRage(array $borders,float $value): bool
+    {
+        return $borders[0] <= $value && $borders[1] >= $value;
     }
 }

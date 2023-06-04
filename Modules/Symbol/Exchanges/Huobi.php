@@ -81,4 +81,11 @@ class Huobi extends Exchange
 
         return json_decode($symbols->body(),true)['data'];
     }
+
+    public function link(string $symbol)
+    {
+        $link = config('symbol.exchanges.'.$this->name.'.link');
+
+        return str_replace('{symbol}',str_replace(':','_',strtolower($symbol)),$link);
+    }
 }
