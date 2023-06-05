@@ -10,9 +10,6 @@ class ActionController extends Controller
     {
         $this->setEnv($request->all());
 
-        exec('sudo systemctl stop supervisord.service');
-        exec('sudo systemctl start supervisord.service');
-
         return redirect()->back();
     }
 

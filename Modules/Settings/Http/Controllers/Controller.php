@@ -5,7 +5,6 @@ namespace Modules\Settings\Http\Controllers;
 abstract class Controller extends \App\Http\Controllers\Controller
 {
     protected array $fields = [
-        'SECONDS_TIMEOUT'=>'Loop Timeout(seconds)',
         'TARGET_PROFIT'=>'Target Profit(%)'
     ];
 

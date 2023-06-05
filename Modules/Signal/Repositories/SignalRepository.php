@@ -18,7 +18,7 @@ class SignalRepository
         return $this->signal->clone()->find($id);
     }
 
-    public function paginator(string $symbol)
+    public function paginator(string|null $symbol)
     {
         return (is_null($symbol) || $symbol === 'all') ? $this->signal->clone()->paginate()
             : $this->signal->clone()->where(\DB::raw('concat(`base_coin`,":",`quote_coin`)'),$symbol)->paginate();
