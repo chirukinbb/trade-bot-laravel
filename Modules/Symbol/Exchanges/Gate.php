@@ -19,7 +19,7 @@ class Gate extends Exchange
     public function symbols(): array
     {
         return array_map(function ($symbol) {
-            return str_replace('_',':',strtoupper($symbol));
+            return str_replace('_',':',strtoupper($symbol['id']));
         }, $this->symbolData());
     }
 
@@ -27,7 +27,7 @@ class Gate extends Exchange
     {
         try {
             $symbolData = array_filter($this->symbolData,function ($data) use ($symbol){
-                return $data->id === str_replace(':','_',$symbol);
+                return $data['id'] === str_replace(':','_',$symbol);
             });
         return !empty($symbolData) && array_shift($symbolData)['status'] === 1;
         }catch (\Exception $exception){
