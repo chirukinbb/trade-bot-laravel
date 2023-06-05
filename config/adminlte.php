@@ -302,10 +302,10 @@ return [
             'url'         => '/signal/list',
             'text'         => 'Signals',
         ],
-//        [
-//            'url'         => '/settings',
-//            'text'         => 'Settings',
-//        ],
+        [
+            'url'         => '/settings',
+            'text'         => 'Settings',
+        ],
         [
             'url'         => '/logout',
             'text'         => 'Logout',
