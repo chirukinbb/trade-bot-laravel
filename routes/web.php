@@ -15,6 +15,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('e',function (){
-    Artisan::call(' trader:symbol TITAN:USDT 1000 0');
+    Artisan::call(' trader:symbol BTC:USDT 1000000 0');
    // dd((new \Modules\Symbol\Exchanges\Binance(config('symbol.proxies.0')))->symbolData());
 });
