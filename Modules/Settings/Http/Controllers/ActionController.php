@@ -3,6 +3,8 @@
 namespace Modules\Settings\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Process\Process;
 
 class ActionController extends Controller
 {
@@ -10,8 +12,8 @@ class ActionController extends Controller
     {
         $this->setEnv($request->all());
 
-        exec('sudo systemctl stop supervisord.service');
-        exec('sudo systemctl start supervisord.service');
+        (new Process(['sudo systemctl stop supervisord.service']))->start();
+        (new Process(['sudo systemctl start supervisord.service']))->start();
 
         return redirect()->back();
     }
