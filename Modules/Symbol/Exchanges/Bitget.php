@@ -97,4 +97,26 @@ class Bitget extends Exchange
 
         return json_decode($symbols->body(),true)['data'];
     }
+
+    public function coinInfo(string $coin)
+    {
+        $coins = $this->http->get('https://api.bitget.com/api/spot/v1/public/currencies');
+
+        $coins = array_filter(json_decode($coins->body(),true)['data'],function ($coinData) use ($coin){
+            return $coinData['coinName'] === $coin;
+        });
+
+        if (empty($coins)){
+            return false;
+        }
+
+        $coin = array_shift($coins)['chains'][0];
+
+        return [
+            'fee'=>$coin['withdrawFee'],
+            'status'=>$coin['withdrawable'],
+            'min'=>$coin['minWithdrawAmount'],
+            'percent'=>true
+        ];
+    }
 }

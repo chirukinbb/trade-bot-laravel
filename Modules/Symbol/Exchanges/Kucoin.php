@@ -70,4 +70,20 @@ class Kucoin extends Exchange
 
         return json_decode($symbols->body(),true)['data'];
     }
+
+    public function coinInfo(string $coin)
+    {
+        $coins = $this->sdk->currencies()->getAll();
+        $coin  = array_filter($coins['data'],function ($data) use ($coin){
+            return $data['currency'] === $coin;
+        });
+        $coin = array_shift($coin);
+
+        return [
+            'fee'=>$coin['withdrawalMinFee'],
+            'status'=>$coin['isWithdrawEnabled'],
+            'min'=>$coin['withdrawalMinSize'],
+            'percent'=>false
+        ];
+    }
 }

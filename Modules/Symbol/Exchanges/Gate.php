@@ -4,6 +4,7 @@ namespace Modules\Symbol\Exchanges;
 
 use Illuminate\Support\Facades\Http;
 use Lin\Gate\GateSpotV2;
+use Lin\Gate\GateWallet;
 
 class Gate extends Exchange
 {
@@ -101,5 +102,18 @@ class Gate extends Exchange
         $symbols = $this->http->get('https://api.gateio.ws/api/v4/margin/currency_pairs');
 
         return json_decode($symbols->body(),true);
+    }
+
+    public function coinInfo(string $coin)
+    {
+        $coins = (new GateWallet(env('GATE_API_KEY',''),env('GATE_API_SECRET','')))->wallet()->getWithdrawStatus(['currency'=>$coin]);//etWithdrawals();//publics()->marketinfo(['coin'=>$coin]);
+        $coin = $coins[0];
+
+        return [
+            'fee'=>(float) $coin['withdraw_percent'],
+            'status'=>!!count($coin['withdraw_fix_on_chains']),
+            'min'=>array_shift($coin['withdraw_fix_on_chains']),
+            'percent'=>true
+        ];
     }
 }

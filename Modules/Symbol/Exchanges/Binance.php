@@ -12,19 +12,15 @@ class Binance extends Exchange
 
     public function __construct(array $proxy,private array $symbolData = [])
     {
-        $this->sdk = new API(env('BINANCE_API_KEY'), env('BINANCE_API_SECRET'));
+        $this->sdk = new \Modules\Trader\SDK\Binance(env('BINANCE_API_KEY'), env('BINANCE_API_SECRET'));
         $this->sdk->setProxy(array_merge($proxy,['proto'=>'https']));
     }
 
     public function symbols(): array
     {
-        $symbols = array_filter($this->symbolData(), function ($symbol) {
-            return in_array('MARGIN', $symbol['permissions']);
-        });
-
         return array_map(function ($symbol) {
             return $symbol['baseAsset'].':'.$symbol['quoteAsset'];
-        }, $symbols);
+        }, $this->symbolData());
     }
 
     public function isSymbolOnline(string $symbol): bool
@@ -45,21 +41,16 @@ class Binance extends Exchange
 
     public function sendOrder(array $data): array
     {
-        $data = Http::post('https://testnet.binance.vision/sapi/v1/margin/order', [
-            'symbol' => $data['symbol'],
-            'quantity' => $data['volume'],
-            'side' => $data['side'],
-            'type' => 'MARKET',
-            'timestamp' => now()->timestamp,
-            'signature' => hash_hmac('sha256', http_build_query($data), env('BINANCE_API_SECRET'))
-        ]);
+        $this->sdk->clearProxy();
+        $data = $this->sdk->order($data['side'],$data['symbol'],$data['volume'],$data['price'],'MARKET');
 
         return json_decode($data->body())->orderId;
     }
 
     public function order(array $data)
     {
-        $data = json_decode(Http::post('https://testnet.binance.vision/api/v3/order', [
+        $data = $this->sdk->orders($data['symbol']);
+        $data = json_decode(Http::post('https://binance.vision/api/v3/order', [
             'symbol' => $data['symbol'],
             'orderId' => $data['orderId'],
             'timestamp' => now()->timestamp,
@@ -73,13 +64,22 @@ class Binance extends Exchange
         ];
     }
 
-    public function withdrawalFee(string $coin)
+    public function coinInfo(string $coin)
     {
-        try {
-            return $this->sdk->withdrawFee($coin)['withdrawFee'];
-        }catch (\Exception $exception){
-            return 0;
+        $coins = $this->sdk->assetDetail();
+
+        if (!isset($coins['assetDetail'][$coin])){
+            return false;
         }
+
+        $coin = $coins['assetDetail'][$coin];
+
+        return [
+            'fee'=>$coin['withdrawFee'],
+            'status'=>$coin['withdrawStatus'],
+            'min'=>$coin['minWithdrawAmount'],
+            'percent'=>false
+        ];
     }
 
     protected function extractBook(array $data)
@@ -107,5 +107,10 @@ class Binance extends Exchange
     public function symbolData()
     {
         return$this->sdk->exchangeInfo()['symbols'];
+    }
+
+    public function transfer(array $data)
+    {
+        $this->sdk->withdraw($data['coin'],$data['address'],$data['amount']);
     }
 }

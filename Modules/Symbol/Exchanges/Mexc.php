@@ -3,6 +3,7 @@
 namespace Modules\Symbol\Exchanges;
 
 use Lin\Mxc\MxcSpot;
+use Modules\Trader\SDK\MxcWallet;
 
 class Mexc extends Exchange
 {
@@ -11,7 +12,7 @@ class Mexc extends Exchange
 
     public function __construct(array $proxy,private array $symbolData = [])
     {
-        $this->sdk = new MxcSpot(env('MXC_API_KEY') ?? '',env('MXC_API_SECRET') ?? '');
+        $this->sdk = new MxcSpot(env('MXC_API_KEY') ?? '',env('MXC_API_SECRET') ?? '','https://api.mexc.com');
         parent::__construct($proxy);
     }
 
@@ -94,5 +95,25 @@ class Mexc extends Exchange
         $symbols = $this->http->get('https://www.mexc.com/open/api/v2/market/symbols');
 
         return json_decode($symbols->body(),true)['data'];
+    }
+
+    public function coinInfo(string $coin)
+    {
+        $coin = array_filter($this->sdk->wallet()->getCoins(),function ($data) use ($coin){
+            return $data['coin'] === $coin;
+        });
+
+        if (empty($coin)){
+            return false;
+        }
+
+        $coin = array_shift($coin)['networkList'][0];
+
+        return [
+            'fee'=>$coin['withdrawFee'],
+            'status'=>$coin['withdrawEnable'],
+            'min'=>$coin['withdrawMin'],
+            'percent'=>false
+        ];
     }
 }

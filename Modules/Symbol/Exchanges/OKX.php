@@ -3,6 +3,7 @@
 namespace Modules\Symbol\Exchanges;
 
 use Lin\Okex\OkexSpot;
+use Lin\Okex\OkexV5;
 
 class OKX extends Exchange
 {
@@ -72,5 +73,21 @@ class OKX extends Exchange
         $symbols = $this->http->get('https://www.okx.com/api/v5/public/instruments?instType=SPOT');
 
         return json_decode($symbols->body(),true)['data'];
+    }
+
+    public function coinInfo(string $coin)
+    {
+        $coins = (new OkexV5(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '',env('OKX_PASS_PHRASE')))->asset()->getCurrencies();
+        $coin  = array_filter($coins['data'],function ($data) use ($coin){
+            return $data['ccy'] === $coin;
+        });
+        $coin = array_shift($coin);
+
+        return [
+            'fee'=>$coin['minFee'],
+            'status'=>$coin['canWd'],
+            'min'=>$coin['minWd'],
+            'percent'=>false
+        ];
     }
 }

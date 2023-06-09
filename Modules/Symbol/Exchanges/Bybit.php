@@ -80,11 +80,16 @@ class Bybit extends Exchange
 
     private function headers($body)
     {
+        ksort($body);
+
+        $timestamp = round(microtime(true) * 1000);
+        $recv_window = 5000;
+        $string = $timestamp.env('BYBIT_API_KEY').$recv_window.http_build_query($body);
+
         return [
-            'X-BAPI-SIGN-TYPE'=>2,
-            'X-BAPI-SIGN'=>hash_hmac('sha256',http_build_query($body),env('BYBIT_API_SECRET')),
-            'BAPI-API-KEY'=>env('BYBIT_API_KEY'),
-            'X-BAPI-TIMESTAMP'=>now()->timestamp*1000,
+            'X-BAPI-SIGN'=>hash_hmac('sha256',$string,env('BYBIT_API_SECRET')),
+            'X-BAPI-API-KEY'=>env('BYBIT_API_KEY'),
+            'X-BAPI-TIMESTAMP'=>$timestamp,
             'X-BAPI-RECV-WINDOW'=>5000
         ];
     }
@@ -94,5 +99,20 @@ class Bybit extends Exchange
         $symbols = $this->http->get('https://api.bybit.com/spot/v1/symbols');
 
         return json_decode($symbols->body(),true)['result'];
+    }
+
+    public function coinInfo(string $coin)
+    {
+        $coins = $this->http->withHeaders($this->headers([
+            'coin'=>$coin
+        ]))->get('https://api.bybit.com/v5/asset/coin/query-info?coin='.$coin);
+        $coin = json_decode($coins->body(),true)['result']['rows'][0]['chains'][0];
+
+        return [
+            'fee'=>$coin['withdrawFee'],
+            'status'=>!!$coin['chainWithdraw'],
+            'min'=>$coin['withdrawMin'],
+            'percent'=>false
+        ];
     }
 }

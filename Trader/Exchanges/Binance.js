@@ -56,6 +56,10 @@ class Binance extends Exchange {
             amount:data.volume
         })
     }
+
+    async getCoin(coin){
+        return await this.sdk.getAssetDetail({asset:coin})
+    }
 }
 
 module.exports = Binance

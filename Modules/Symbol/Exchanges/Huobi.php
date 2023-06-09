@@ -88,4 +88,16 @@ class Huobi extends Exchange
 
         return str_replace('{symbol}',str_replace(':','_',strtolower($symbol)),$link);
     }
+
+    public function coinInfo(string $coin)
+    {
+        $coin = $this->sdk->reference()->getCurrencies(['currency'=>strtolower($coin)])['data'][0]['chains'][0];
+
+        return [
+            'fee'=>$coin['transactFeeWithdraw'],
+            'status'=>$coin['withdrawStatus'] === 'allowed',
+            'min'=>$coin['minWithdrawAmt'],
+            'percent'=>false
+        ];
+    }
 }

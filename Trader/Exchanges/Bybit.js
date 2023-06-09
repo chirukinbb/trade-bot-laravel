@@ -87,6 +87,10 @@ class Bybit extends Exchange {
 
         return book;
     }
+
+    async coin(coin) {
+        console.log((await this.sdk.getCoinInfo(coin)).result.rows)
+    }
 }
 
 module.exports = Bybit
