@@ -14,6 +14,12 @@ class Huobi extends Exchange
     {
         $this->sdk  = new HuobiSpot(env('HUOBI_API_KEY',''),env('HUOBI_API_SECRET',''));
         parent::__construct($proxy);
+        $this->sdk->setOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+            ]
+        ]);
     }
 
     public function symbols(): array

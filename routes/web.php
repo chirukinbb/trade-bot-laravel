@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('e',function (){
 
     dd(//$data
-        (new \Modules\Symbol\Exchanges\Mexc(config('symbol.proxies.0')))->coinInfo('BTC'),
+        (new \Modules\Symbol\Exchanges\Gate(config('symbol.proxies.0')))->coinInfo('IOTA'),
   //      (new \Modules\Symbol\Exchanges\Bybit(config('symbol.proxies.0')))->baseCoinInfo('BTC')
     );
     //Artisan::call(' trader:symbol BTC:USDT 1000000 0');

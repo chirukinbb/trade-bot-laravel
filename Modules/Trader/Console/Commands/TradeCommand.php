@@ -44,6 +44,7 @@ class TradeCommand extends Command
 
         $book = [];
         $links = [];
+        $coin =  [];
         $symbolData = json_decode(\Storage::get('symbols.json'),true);
 
         foreach (config('symbol.exchanges') as $exchange => $data){
@@ -55,11 +56,12 @@ class TradeCommand extends Command
             if ($exchanges[$exchange]['is_online']) {
                 $book[$exchange] = $exchanges[$exchange]['adapter']->orderBook($symbol);
                 $links[$exchange] = $exchanges[$exchange]['adapter']->link($symbol);
+                $coin[$exchange] = $exchanges[$exchange]['adapter']->coinInfo(explode(':',$symbol)[0]);
             }
         }
 
         if (!empty($book)) {
-            $trade = new Trade($symbol, $book, $links,$volume,(new Binance(config('symbol.proxies')[$number]))->withdrawalFee(explode(':',$symbol)[0]));
+            $trade = new Trade($symbol, $book, $links,$volume,$coin);
 
             $sell = $trade->sell();
             $buy = $trade->buy();

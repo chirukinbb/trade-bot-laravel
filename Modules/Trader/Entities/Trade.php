@@ -13,12 +13,11 @@ class Trade
         private array $orderBook,
         private array $links,
         private float $maxVolume = 0,
-        private float $fee = 0,
+        private array $coin = [],
     ) {
         $this->symbol = explode(':', $symbol);
         // биржи с лучшим предложением
         $this->setBetterPrices();
-        //dump($this->orderBook,$this->sell,$this->buy);
         // установка книги ордеров с противоположной биржы
         $this->setBookFromAnotherExchange('sell');
         $this->setBookFromAnotherExchange('buy');
@@ -63,7 +62,7 @@ class Trade
         $restBaseVolume = $this->buy['volume']['base'];
         $restQuoteVolume = $this->maxVolume;
         $this->buy['volume']['quote'] = 0;
-        $this->buy['volume']['base'] = - $this->fee;
+        $this->buy['volume']['base'] = - ($this->coin[$this->buy['exchange']]['percent'] ? (1 - $this->coin[$this->buy['exchange']]['fee']) * $restBaseVolume : $this->coin[$this->buy['exchange']]['fee']);
         // расчет конечной цены
         // действие повторяетчя пока не сьест ввесь обьем
         foreach ($this->buy['book'] as $book) {
@@ -142,9 +141,11 @@ class Trade
         $asks = [];
         $bids = [];
         // заполнение массива ценами первых ордеров с каждой биржы в обеих направлениях
-        foreach ($this->orderBook as  $book) {
-            $asks[] = $book['asks'][0]['price'];
-            $bids[] = $book['bids'][0]['price'];
+        foreach ($this->orderBook as  $exchange => $book) {
+            if ($this->coin[$exchange]['status']) {
+                $asks[] = $book['asks'][0]['price'];
+                $bids[] = $book['bids'][0]['price'];
+            }
         }
         // выбор учшихцен
         $maxAsk = min($asks);

@@ -4,6 +4,7 @@ namespace Modules\Symbol\Exchanges;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use PhpParser\Node\Expr\Cast\Object_;
 
 abstract class Exchange
 {
@@ -14,7 +15,8 @@ abstract class Exchange
     {
         $this->http = Http::withOptions([
             'proxy'=>[
-                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}"
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
             ]
         ]);
     }

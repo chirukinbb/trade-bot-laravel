@@ -15,6 +15,12 @@ class Gate extends Exchange
     {
         $this->sdk = new GateSpotV2(env('GATE_API_KEY',''),env('GATE_API_SECRET',''));
         parent::__construct($proxy);
+        $this->sdk->setOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+            ]
+        ]);
     }
 
     public function symbols(): array
@@ -111,8 +117,8 @@ class Gate extends Exchange
 
         return [
             'fee'=>(float) $coin['withdraw_percent'],
-            'status'=>!!count($coin['withdraw_fix_on_chains']),
-            'min'=>array_shift($coin['withdraw_fix_on_chains']),
+            'status'=>!!isset($coin['withdraw_fix_on_chains']),
+            'min'=>isset($coin['withdraw_fix_on_chains']) ? array_shift($coin['withdraw_fix_on_chains']) : 0,
             'percent'=>true
         ];
     }

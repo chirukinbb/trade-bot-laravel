@@ -14,6 +14,12 @@ class Bybit extends Exchange
     {
         $this->sdk = new BybitSpot(env('BYBIT_API_KEY',''),env('BYBIT_API_SECRET',''));
         parent::__construct($proxy);
+        $this->sdk->setOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+            ]
+        ]);
     }
 
     public function symbols(): array

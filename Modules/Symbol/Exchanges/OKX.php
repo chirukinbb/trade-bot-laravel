@@ -14,6 +14,12 @@ class OKX extends Exchange
     {
         $this->sdk = new OkexSpot(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '');
         parent::__construct($proxy);
+        $this->sdk->setOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+            ]
+        ]);
     }
 
     public function symbols(): array

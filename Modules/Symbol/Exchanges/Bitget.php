@@ -13,6 +13,12 @@ class Bitget extends Exchange
     public function __construct(array $proxy,private array $symbolData = [])
     {
         $this->sdk  = new BitgetSpot(env('BITGET_API_KEY',''),env('BITGET_API_SECRET',''));
+        $this->sdk->setOptions([
+            'proxy'=>[
+                'https' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+                'http' => "https://{$proxy['user']}:{$proxy['pass']}@{$proxy['address']}:{$proxy['port']}",
+            ]
+        ]);
         parent::__construct($proxy);
     }
 
