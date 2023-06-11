@@ -18,6 +18,11 @@
                 <input type="checkbox" id="trading" name="IS_TRADING_ENABLED" value="1" class="" @checked(env('IS_TRADING_ENABLED') == 1)>
                 Trading Enabled
             </label>
+            <label for="checking" class="py-2 d-block">
+                <input type="hidden" name="CHECK_WITHDRAWAL" value="0">
+                <input type="checkbox" id="checking" name="CHECK_WITHDRAWAL" value="1" class="" @checked(env('CHECK_WITHDRAWAL') == 1)>
+                Check Withdrawal
+            </label>
             @foreach($fields as $field=>$data)
                 @if(is_array($data))
                     <div class="section">

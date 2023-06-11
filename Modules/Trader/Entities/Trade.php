@@ -142,7 +142,9 @@ class Trade
         $bids = [];
         // заполнение массива ценами первых ордеров с каждой биржы в обеих направлениях
         foreach ($this->orderBook as  $exchange => $book) {
-            if ($this->coin[$exchange]['status']) {
+            $check = !env('CHECK_WITHDRAWAL') || $this->coin[$exchange]['status'];
+
+            if ($check) {
                 $asks[] = $book['asks'][0]['price'];
                 $bids[] = $book['bids'][0]['price'];
             }
