@@ -10,7 +10,7 @@ class Huobi extends Exchange
     protected object $sdk;
     protected string $name = 'huobi';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk  = new HuobiSpot(env('HUOBI_API_KEY',''),env('HUOBI_API_SECRET',''));
         parent::__construct($proxy);
@@ -97,7 +97,10 @@ class Huobi extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coin = $this->sdk->reference()->getCurrencies(['currency'=>strtolower($coin)])['data'][0]['chains'][0];
+        $coin = array_filter($this->assets,function ($asset) use ($coin){
+            return $asset['currency'] === strtolower($coin);
+        });
+        $coin = array_shift($coin);
 
         return [
             'fee'=>$coin['transactFeeWithdraw'],
@@ -105,5 +108,10 @@ class Huobi extends Exchange
             'min'=>$coin['minWithdrawAmt'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        return $this->sdk->reference()->getCurrencies()['data'];
     }
 }

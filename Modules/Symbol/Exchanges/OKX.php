@@ -10,7 +10,7 @@ class OKX extends Exchange
     protected object $sdk;
     protected string $name = 'okx';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new OkexSpot(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '');
         parent::__construct($proxy);
@@ -83,8 +83,7 @@ class OKX extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = (new OkexV5(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '',env('OKX_PASS_PHRASE')))->asset()->getCurrencies();
-        $coin  = array_filter($coins['data'],function ($data) use ($coin){
+        $coin  = array_filter($this->assets,function ($data) use ($coin){
             return $data['ccy'] === $coin;
         });
         $coin = array_shift($coin);
@@ -95,5 +94,10 @@ class OKX extends Exchange
             'min'=>$coin['minWd'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        return (new OkexV5(env('OKX_API_KEY') ?? '',env('OKX_API_SECRET') ?? '',env('OKX_PASS_PHRASE')))->asset()->getCurrencies()['data'];
     }
 }

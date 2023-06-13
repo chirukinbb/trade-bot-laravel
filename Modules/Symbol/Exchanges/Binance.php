@@ -10,7 +10,7 @@ class Binance extends Exchange
     protected object $sdk;
     protected string $name = 'binance';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new \Modules\Trader\SDK\Binance(env('BINANCE_API_KEY'), env('BINANCE_API_SECRET'));
         $this->sdk->setProxy(array_merge($proxy,['proto'=>'https']));
@@ -66,13 +66,7 @@ class Binance extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = $this->sdk->assetDetail();
-
-        if (!isset($coins['assetDetail'][$coin])){
-            return false;
-        }
-
-        $coin = $coins['assetDetail'][$coin];
+        $coin = $this->assets['assetDetail'][$coin];
 
         return [
             'fee'=>$coin['withdrawFee'],
@@ -80,6 +74,11 @@ class Binance extends Exchange
             'min'=>$coin['minWithdrawAmount'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        return $this->sdk->assetDetail();
     }
 
     protected function extractBook(array $data)

@@ -35,9 +35,11 @@ class ExchangeCommand extends Command
         $phpBinaryPath = $phpBinaryFinder->find();
 
         $this->setSymbolData();
+        $this->setCoinData();
 
         $loop->addPeriodicTimer(3600,function (){
             $this->setSymbolData();
+            $this->setCoinData();
         });
 
         $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($phpBinaryPath){
@@ -58,5 +60,16 @@ class ExchangeCommand extends Command
         }
 
         \Storage::put('symbols.json',json_encode($data));
+    }
+
+    public function setCoinData()
+    {
+        $data = [];
+
+        foreach (config('symbol.exchanges') as $exchange => $exchangeData){
+            $data[$exchange] = (new $exchangeData['adapter'](config('symbol.proxies.0')))->getAssets();
+        }
+
+        \Storage::put('coins.json',json_encode($data));
     }
 }

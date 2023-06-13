@@ -7,7 +7,7 @@ class Kucoin extends Exchange
     protected object $sdk;
     protected string $name = 'kucoin';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new \Lin\Ku\Kucoin(env('KUCOIN_API_KEY',''),env('KUCOIN_API_SECRET',''));
         parent::__construct($proxy);
@@ -79,8 +79,7 @@ class Kucoin extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = $this->sdk->currencies()->getAll();
-        $coin  = array_filter($coins['data'],function ($data) use ($coin){
+        $coin  = array_filter($this->assets,function ($data) use ($coin){
             return $data['currency'] === $coin;
         });
         $coin = array_shift($coin);
@@ -91,5 +90,10 @@ class Kucoin extends Exchange
             'min'=>$coin['withdrawalMinSize'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        return $this->sdk->currencies()->getAll()['data'];
     }
 }

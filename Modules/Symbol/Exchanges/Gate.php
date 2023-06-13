@@ -11,7 +11,7 @@ class Gate extends Exchange
     protected object $sdk;
     protected string $name = 'gate';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new GateSpotV2(env('GATE_API_KEY',''),env('GATE_API_SECRET',''));
         parent::__construct($proxy);
@@ -113,7 +113,10 @@ class Gate extends Exchange
     public function coinInfo(string $coin)
     {
         $coins = (new GateWallet(env('GATE_API_KEY',''),env('GATE_API_SECRET','')))->wallet()->getWithdrawStatus(['currency'=>$coin]);//etWithdrawals();//publics()->marketinfo(['coin'=>$coin]);
-        $coin = $coins[0];
+        $array = array_filter($this->assets, function ($curr) use ($coin) {
+            return $curr['currency'] === $coin;
+        });
+        $coin = array_shift($array);
 
         return [
             'fee'=>(float) $coin['withdraw_percent'],
@@ -121,5 +124,12 @@ class Gate extends Exchange
             'min'=>isset($coin['withdraw_fix_on_chains']) ? array_shift($coin['withdraw_fix_on_chains']) : 0,
             'percent'=>true
         ];
+    }
+
+    public function getAssets()
+    {
+        $coins = (new GateWallet(env('GATE_API_KEY',''),env('GATE_API_SECRET','')))->wallet()->getWithdrawStatus();
+
+        return $coins;
     }
 }

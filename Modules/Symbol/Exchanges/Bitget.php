@@ -10,7 +10,7 @@ class Bitget extends Exchange
     protected object $sdk;
     protected string $name = 'bitget';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk  = new BitgetSpot(env('BITGET_API_KEY',''),env('BITGET_API_SECRET',''));
         $this->sdk->setOptions([
@@ -106,9 +106,7 @@ class Bitget extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = $this->http->get('https://api.bitget.com/api/spot/v1/public/currencies');
-
-        $coins = array_filter(json_decode($coins->body(),true)['data'],function ($coinData) use ($coin){
+        $coins = array_filter($this->assets,function ($coinData) use ($coin){
             return $coinData['coinName'] === $coin;
         });
 
@@ -124,5 +122,12 @@ class Bitget extends Exchange
             'min'=>$coin['minWithdrawAmount'],
             'percent'=>true
         ];
+    }
+
+    public function getAssets()
+    {
+        $data  = $this->http->get('https://api.bitget.com/api/spot/v1/public/currencies');
+
+        return json_decode($data->body(),true)['data'];
     }
 }

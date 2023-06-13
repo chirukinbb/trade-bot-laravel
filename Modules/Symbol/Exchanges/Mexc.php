@@ -10,7 +10,7 @@ class Mexc extends Exchange
     protected object $sdk;
     protected string $name = 'mxc';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new MxcSpot(env('MXC_API_KEY') ?? '',env('MXC_API_SECRET') ?? '','https://api.mexc.com');
         parent::__construct($proxy);
@@ -105,7 +105,7 @@ class Mexc extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coin = array_filter($this->sdk->wallet()->getCoins(),function ($data) use ($coin){
+        $coin = array_filter($this->assets,function ($data) use ($coin){
             return $data['coin'] === $coin;
         });
 
@@ -121,5 +121,10 @@ class Mexc extends Exchange
             'min'=>$coin['withdrawMin'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        return $this->sdk->wallet()->getCoins();
     }
 }

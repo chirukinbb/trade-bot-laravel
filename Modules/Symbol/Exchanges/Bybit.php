@@ -10,7 +10,7 @@ class Bybit extends Exchange
     protected object $sdk;
     protected string $name = 'bybit';
 
-    public function __construct(array $proxy,private array $symbolData = [])
+    public function __construct(array $proxy,private array $symbolData = [],private array $assets =[])
     {
         $this->sdk = new BybitSpot(env('BYBIT_API_KEY',''),env('BYBIT_API_SECRET',''));
         parent::__construct($proxy);
@@ -109,10 +109,10 @@ class Bybit extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = $this->http->withHeaders($this->headers([
-            'coin'=>$coin
-        ]))->get('https://api.bybit.com/v5/asset/coin/query-info?coin='.$coin);
-        $coin = json_decode($coins->body(),true)['result']['rows'][0]['chains'][0];
+        $array = array_filter($this->assets, function ($asset) use ($coin) {
+            return $asset['coin'] === $coin;
+        });
+        $coin = array_shift($array);
 
         return [
             'fee'=>$coin['withdrawFee'],
@@ -120,5 +120,13 @@ class Bybit extends Exchange
             'min'=>$coin['withdrawMin'],
             'percent'=>false
         ];
+    }
+
+    public function getAssets()
+    {
+        $coins = $this->http->withHeaders($this->headers([
+        ]))->get('https://api.bybit.com/v5/asset/coin/query-info');
+
+        return json_decode($coins->body(),true)['result']['rows'];
     }
 }

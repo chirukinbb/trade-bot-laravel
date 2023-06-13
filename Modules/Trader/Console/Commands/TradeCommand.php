@@ -46,9 +46,10 @@ class TradeCommand extends Command
         $links = [];
         $coin =  [];
         $symbolData = json_decode(\Storage::get('symbols.json'),true);
+        $coinData = json_decode(\Storage::get('coins.json'),true);
 
         foreach (config('symbol.exchanges') as $exchange => $data){
-            $exchanges[$exchange] = ['adapter'=>new $data['adapter'](config('symbol.proxies')[$number],$symbolData[$exchange])];
+            $exchanges[$exchange] = ['adapter'=>new $data['adapter'](config('symbol.proxies')[$number],$symbolData[$exchange],$coinData[$exchange])];
             $exchanges[$exchange]['is_online'] = $exchanges[$exchange]['adapter']->isSymbolOnline($symbol);
         }
 
