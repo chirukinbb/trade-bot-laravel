@@ -86,6 +86,11 @@ class OKX extends Exchange
         $coin  = array_filter($this->assets,function ($data) use ($coin){
             return $data['ccy'] === $coin;
         });
+
+        if (empty($coins)){
+            return false;
+        }
+
         $coin = array_shift($coin);
 
         return [

@@ -100,6 +100,11 @@ class Huobi extends Exchange
         $coin = array_filter($this->assets,function ($asset) use ($coin){
             return $asset['currency'] === strtolower($coin);
         });
+
+        if (empty($coins)){
+            return false;
+        }
+
         $coin = array_shift($coin);
 
         return [

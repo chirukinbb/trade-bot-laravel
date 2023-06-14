@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('e',function (){
 
     dd(//$data
-        (new \Modules\Symbol\Exchanges\Huobi(config('symbol.proxies.0')))->getAssets(),
+        (new \Modules\Symbol\Exchanges\Huobi(config('symbol.proxies.0'),[],json_decode(file_get_contents(storage_path('app/coins.json')),true)['huobi']))->coinInfo('BTC'),
   //      (new \Modules\Symbol\Exchanges\Bybit(config('symbol.proxies.0')))->baseCoinInfo('BTC')
     );
     //Artisan::call(' trader:symbol BTC:USDT 1000000 0');

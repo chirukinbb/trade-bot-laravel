@@ -112,10 +112,14 @@ class Gate extends Exchange
 
     public function coinInfo(string $coin)
     {
-        $coins = (new GateWallet(env('GATE_API_KEY',''),env('GATE_API_SECRET','')))->wallet()->getWithdrawStatus(['currency'=>$coin]);//etWithdrawals();//publics()->marketinfo(['coin'=>$coin]);
         $array = array_filter($this->assets, function ($curr) use ($coin) {
             return $curr['currency'] === $coin;
         });
+
+        if (empty($coins)){
+            return false;
+        }
+
         $coin = array_shift($array);
 
         return [

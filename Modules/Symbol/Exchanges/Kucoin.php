@@ -82,6 +82,11 @@ class Kucoin extends Exchange
         $coin  = array_filter($this->assets,function ($data) use ($coin){
             return $data['currency'] === $coin;
         });
+
+        if (empty($coins)){
+            return false;
+        }
+
         $coin = array_shift($coin);
 
         return [

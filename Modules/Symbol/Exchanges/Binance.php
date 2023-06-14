@@ -68,6 +68,10 @@ class Binance extends Exchange
     {
         $coin = $this->assets['assetDetail'][$coin];
 
+        if (empty($coins)){
+            return false;
+        }
+
         return [
             'fee'=>$coin['withdrawFee'],
             'status'=>$coin['withdrawStatus'],
