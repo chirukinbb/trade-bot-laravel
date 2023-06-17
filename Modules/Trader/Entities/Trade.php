@@ -29,8 +29,6 @@ class Trade
         $this->pivotToMinBaseVolume();
 
         $this->calculatePricesAndVolumesForSellExchange();
-
-        dd($this->sell,$this->buy);
     }
 
     public function message()
