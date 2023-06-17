@@ -113,11 +113,11 @@ class Bybit extends Exchange
             return $asset['coin'] === $coin;
         });
 
-        if (empty($coins)){
+        if (empty($coin)){
             return false;
         }
 
-        $coin = array_shift($array);
+        $coin = array_shift($array)['chains'][0];
 
         return [
             'fee'=>$coin['withdrawFee'],

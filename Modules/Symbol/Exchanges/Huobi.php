@@ -101,11 +101,11 @@ class Huobi extends Exchange
             return $asset['currency'] === strtolower($coin);
         });
 
-        if (empty($coins)){
+        if (empty($coin)){
             return false;
         }
 
-        $coin = array_shift($coin);
+        $coin = array_shift($coin)['chains'][0];
 
         return [
             'fee'=>$coin['transactFeeWithdraw'],

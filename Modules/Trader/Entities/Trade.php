@@ -29,6 +29,8 @@ class Trade
         $this->pivotToMinBaseVolume();
 
         $this->calculatePricesAndVolumesForSellExchange();
+
+        dd($this->sell,$this->buy);
     }
 
     public function message()
@@ -62,7 +64,7 @@ class Trade
         $restBaseVolume = $this->buy['volume']['base'];
         $restQuoteVolume = $this->maxVolume;
         $this->buy['volume']['quote'] = 0;
-        $this->buy['volume']['base'] = - ($this->coin[$this->buy['exchange']]['percent'] ? (1 - $this->coin[$this->buy['exchange']]['fee']) * $restBaseVolume : $this->coin[$this->buy['exchange']]['fee']);
+        $this->buy['volume']['base'] = 0;
         // расчет конечной цены
         // действие повторяетчя пока не сьест ввесь обьем
         foreach ($this->buy['book'] as $book) {
@@ -260,9 +262,12 @@ class Trade
     private function pivotToMinBaseVolume()
     {
         $volume = max(min([$this->buy['volume']['base'], $this->sell['volume']['base']]), 0);
+        $volumeWithFee = ($this->coin[$this->buy['exchange']]['percent'] ?
+            $volume * (1 + $this->coin[$this->buy['exchange']]['fee']):
+            $volume - $this->coin[$this->buy['exchange']]['fee']);
 
         $this->buy['volume']['base'] = $volume;
-        $this->sell['volume']['base'] = $volume;
+        $this->sell['volume']['base'] = $volumeWithFee;
     }
 
     private function inRage(array $borders,float $value): bool

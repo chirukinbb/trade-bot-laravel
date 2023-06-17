@@ -87,7 +87,7 @@ class OKX extends Exchange
             return $data['ccy'] === $coin;
         });
 
-        if (empty($coins)){
+        if (empty($coin)){
             return false;
         }
 

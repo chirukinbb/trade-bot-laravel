@@ -83,7 +83,7 @@ class Kucoin extends Exchange
             return $data['currency'] === $coin;
         });
 
-        if (empty($coins)){
+        if (empty($coin)){
             return false;
         }
 

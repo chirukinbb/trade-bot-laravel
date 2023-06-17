@@ -116,7 +116,7 @@ class Gate extends Exchange
             return $curr['currency'] === $coin;
         });
 
-        if (empty($coins)){
+        if (empty($coin)){
             return false;
         }
 
