@@ -36,7 +36,7 @@ use Modules\Settings\Entities\Setting;
                 @else
                     <label for="{{$field}}" class="py-2 d-block">
                         <input type="hidden" name="{{$field}}" value="0">
-                        <input type="checkbox" id="{{$field}}" name="{{$field}}" value="1" class="" @checked(Setting::env('IS_TRADING_ENABLED') == 1)>
+                        <input type="checkbox" id="{{$field}}" name="{{$field}}" value="1" class="" {{Setting::env($field) == 1 ? 'checked'  : ''}}>
                         {{$data[0]}}
                     </label>
                 @endif

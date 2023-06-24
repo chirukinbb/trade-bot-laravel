@@ -10,7 +10,7 @@ class ActionController extends Controller
     public function save(Request $request)
     {
         foreach ($request->all() as $name=>$value) {
-            Setting::updateOrCreate(['value'=>$value],['name'=>$name]);
+            Setting::updateOrCreate(['name'=>$name],['value'=>$value]);
         }
 
         return redirect()->back();
