@@ -4,8 +4,10 @@ namespace Modules\Settings\Http\Controllers;
 
 abstract class Controller extends \App\Http\Controllers\Controller
 {
-    protected array $fields = [
-        'TARGET_PROFIT'=>'Target Profit(%)'
+    public array $fields = [
+        'TARGET_PROFIT'=>['Target Profit(%)','input'],
+        'CHECK_WITHDRAWAL'=>['Check Withdraw','checkbox'],
+        'IS_TRADING_ENABLED'=>['Trading Enabled','checkbox']
     ];
 
     public function __construct()

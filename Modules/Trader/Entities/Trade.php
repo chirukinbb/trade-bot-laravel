@@ -2,6 +2,8 @@
 
 namespace Modules\Trader\Entities;
 
+use Modules\Settings\Entities\Setting;
+
 class Trade
 {
     private array $sell;
@@ -63,6 +65,7 @@ class Trade
         $restQuoteVolume = $this->maxVolume;
         $this->buy['volume']['quote'] = 0;
         $this->buy['volume']['base'] = 0;
+        $i = 0;
         // расчет конечной цены
         // действие повторяетчя пока не сьест ввесь обьем
         foreach ($this->buy['book'] as $book) {
@@ -71,10 +74,8 @@ class Trade
                 $baseVolume = min([$restBaseVolume, $book['value']]);
                 // считает обьем quote coin в сьедаемом обьеме ордера и сравниваем с лимитом
                 $quoteVolume = min($baseVolume * $book['price'], $restQuoteVolume);
-                // если обьем второго коина меньше - пересчитать базовую
-                if ($restQuoteVolume === $quoteVolume) {
-                    $baseVolume = $quoteVolume / $book['price'];
-                }
+                // пересчитать базовую
+                $baseVolume = $quoteVolume / $book['price'];
                 // оставшийся обьем второго коина
                 $restQuoteVolume -= $quoteVolume;
                 // вычитает выбранный обьем из осавшегося(база-коин)
@@ -85,6 +86,8 @@ class Trade
                 $this->buy['volume']['base'] += $baseVolume;
                 // записывает(перезаписывает) цену текущего ордера как конечную цену
                 $this->buy['price']['end'] = $book['price'];
+
+                $i++;
             }
         }
     }
@@ -142,7 +145,7 @@ class Trade
         $bids = [];
         // заполнение массива ценами первых ордеров с каждой биржы в обеих направлениях
         foreach ($this->orderBook as  $exchange => $book) {
-            $check = is_array($this->coin[$exchange]) && (!env('CHECK_WITHDRAWAL') || $this->coin[$exchange]['status']);
+            $check = is_array($this->coin[$exchange]) && (!Setting::env('CHECK_WITHDRAWAL') || $this->coin[$exchange]['status']);
 
             if ($check) {
                 $asks[] = $book['asks'][0]['price'];

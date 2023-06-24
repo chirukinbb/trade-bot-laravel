@@ -3,6 +3,7 @@
 namespace Modules\Trader\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Settings\Entities\Setting;
 use Modules\Symbol\Entities\Symbol;
 use React\EventLoop\Loop;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -42,9 +43,9 @@ class ExchangeCommand extends Command
             $this->setCoinData();
         });
 
-        $loop->addPeriodicTimer(env('SECONDS_TIMEOUT'),function () use ($phpBinaryPath){
+        $loop->addPeriodicTimer(Setting::env('SECONDS_TIMEOUT'),function () use ($phpBinaryPath){
             Symbol::each(function (Symbol $symbol,int $i) use ($phpBinaryPath){
-                (new Process([$phpBinaryPath,base_path('artisan'),'trader:symbol',$symbol->name,$symbol->volume,intdiv($i,250)]))->start();
+               (new Process([$phpBinaryPath,base_path('artisan'),'trader:symbol',$symbol->name,$symbol->volume,intdiv($i,250)]))->start();
             });
         });
 

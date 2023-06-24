@@ -3,6 +3,7 @@
 namespace Modules\Trader\Console\Commands;
 
 use Illuminate\Console\Command;
+use Modules\Settings\Entities\Setting;
 use Modules\Signal\Entities\Deal;
 use Modules\Signal\Entities\Signal;
 use Modules\Symbol\Exchanges\Binance;
@@ -67,7 +68,7 @@ class TradeCommand extends Command
             $sell = $trade->sell();
             $buy = $trade->buy();
 
-            if ($trade->relativeProfit() > env('TARGET_PROFIT') && $sell['exchange'] !== $buy['exchange']) {
+            if ($trade->relativeProfit() > Setting::env('TARGET_PROFIT') && $sell['exchange'] !== $buy['exchange']) {
 
                 if (env('IS_TRADING_ENABLED') == 1) {
                     $sellOrderId = $exchanges[$sell['exchange']]['adapter']->sendOrder($sell);
@@ -87,7 +88,7 @@ class TradeCommand extends Command
 
                 $signal->save();
 
-                if (env('IS_TRADING_ENABLED') == 1) {
+                if (Setting::env('IS_TRADING_ENABLED') == 1) {
                     Deal::create([
                         'exchange' => $sell['exchange'],
                         'exchange_id' => $sellOrderId,

@@ -1,5 +1,7 @@
 @extends('adminlte::page')
-
+<?php
+use Modules\Settings\Entities\Setting;
+?>
 @section('title','Settings')
 
 @section('content_header')
@@ -13,33 +15,29 @@
         </div>
         <form class="card-body" method="post">
             @csrf
-            <label for="trading" class="py-2 d-block">
-                <input type="hidden" name="IS_TRADING_ENABLED" value="0">
-                <input type="checkbox" id="trading" name="IS_TRADING_ENABLED" value="1" class="" @checked(env('IS_TRADING_ENABLED') == 1)>
-                Trading Enabled
-            </label>
-            <label for="checking" class="py-2 d-block">
-                <input type="hidden" name="CHECK_WITHDRAWAL" value="0">
-                <input type="checkbox" id="checking" name="CHECK_WITHDRAWAL" value="1" class="" @checked(env('CHECK_WITHDRAWAL') == 1)>
-                Check Withdrawal
-            </label>
             @foreach($fields as $field=>$data)
-                @if(is_array($data))
+                @if(isset($data['title']))
                     <div class="section">
                         <h3>{{$data['title']}}</h3>
                             <div class="row">
                                 @foreach($data['fields'] as $key => $title)
                                     <label for="{{$field}}" class="p-2 d-block col-6">
                                         {{$title}}
-                                        <input type="text" name="{{$key}}" value="{{env($key)}}" class="form-control">
+                                        <input type="text" name="{{$key}}" value="{{Setting::env($key)}}" class="form-control">
                                     </label>
                                 @endforeach
                             </div>
                     </div>
+                @elseif($data[1] === 'input')
+                    <label for="{{$field}}" class="py-2 d-block">
+                        {{$data[0]}}
+                        <input type="text" name="{{$field}}" value="{{Setting::env($field)}}" class="form-control onlyDigits">
+                    </label>
                 @else
                     <label for="{{$field}}" class="py-2 d-block">
-                        {{$data}}
-                        <input type="text" name="{{$field}}" value="{{env($field)}}" class="form-control onlyDigits">
+                        <input type="hidden" name="{{$field}}" value="0">
+                        <input type="checkbox" id="{{$field}}" name="{{$field}}" value="1" class="" @checked(Setting::env('IS_TRADING_ENABLED') == 1)>
+                        {{$data[0]}}
                     </label>
                 @endif
             @endforeach

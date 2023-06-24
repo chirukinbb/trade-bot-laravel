@@ -3,7 +3,8 @@
 namespace Modules\Settings\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
+use Modules\Settings\Entities\Setting;
+use Modules\Settings\Http\Controllers\ActionController;
 
 class SettingsDatabaseSeeder extends Seeder
 {
@@ -14,8 +15,17 @@ class SettingsDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        Model::unguard();
+        $fields = (new ActionController())->fields;
 
-        // $this->call("OthersTableSeeder");
+        foreach ($fields as $key=>$value){
+            if (isset($value['title'])) {
+                foreach ($value['fields'] as $name=>$field) {
+                    Setting::updateOrCreate(['value' => env($name)], ['name' => $name]);
+                }
+            }else{
+                echo $key.PHP_EOL;
+                Setting::updateOrCreate(['value' => env($key)], ['name' => $key]);
+            }
+        }
     }
 }
