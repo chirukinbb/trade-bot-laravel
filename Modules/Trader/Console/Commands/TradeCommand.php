@@ -63,7 +63,7 @@ class TradeCommand extends Command
         }
 
         if (!empty($book)) {
-            $trade = new Trade($symbol, $book, $links,$volume,$coin);
+            $trade = new Trade($symbol, $book, $links,Setting::env('LIMIT_ENABLED') == 1 ? $volume : 1000000000000,$coin);
 
             $sell = $trade->sell();
             $buy = $trade->buy();
