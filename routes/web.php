@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('e',function (){
 
-    dd(
-        \Modules\Settings\Entities\Setting::env('HUOBI_API_KEY')
-    );
+dd(
+(NEW \Modules\Symbol\Exchanges\Gate(config('symbol.proxies.0')))->symbols()
+);
     //Artisan::call(' trader:symbol BTC:USDT 1000000 0');
    // dd((new \Modules\Symbol\Exchanges\Binance(config('symbol.proxies.0')))->symbolData());
 });

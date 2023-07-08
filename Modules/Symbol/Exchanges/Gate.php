@@ -105,7 +105,7 @@ class Gate extends Exchange
 
     public function symbolData()
     {
-        $symbols = $this->http->get('https://api.gateio.ws/api/v4/margin/currency_pairs');
+        $symbols = $this->http->get('https://api.gateio.ws/api/v4/spot/currency_pairs');
 
         return json_decode($symbols->body(),true);
     }

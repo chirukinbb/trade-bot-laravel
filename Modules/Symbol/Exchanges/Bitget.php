@@ -99,7 +99,7 @@ class Bitget extends Exchange
 
     public function symbolData()
     {
-        $symbols = $this->http->get('https://api.bitget.com/api/mix/v1/market/contracts?productType=umcbl');
+        $symbols = $this->http->get('https://api.bitget.com/api/spot/v1/public/products');
 
         return json_decode($symbols->body(),true)['data'];
     }
