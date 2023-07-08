@@ -60,56 +60,41 @@ class Trade
 
     private function calculatePricesAndVolumesForBuyExchange()
     {
-        // обьем, который нужно сьесть
         $restBaseVolume = $this->buy['volume']['base'];
         $restQuoteVolume = $this->maxVolume;
         $this->buy['volume']['quote'] = 0;
         $this->buy['volume']['base'] = 0;
-        $i = 0;
-        // расчет конечной цены
-        // действие повторяетчя пока не сьест ввесь обьем
+
         foreach ($this->buy['book'] as $book) {
             if ($restBaseVolume > 0 && $restQuoteVolume > 0) {
-                // сравнивает оставшийся обьем и обьем текущего ордера(base coin), берет меньший
-                $baseVolume = min([$restBaseVolume, $book['value']]);
-                // считает обьем quote coin в сьедаемом обьеме ордера и сравниваем с лимитом
+                $baseVolume = min($restBaseVolume, $book['value']);
                 $quoteVolume = min($baseVolume * $book['price'], $restQuoteVolume);
-                // пересчитать базовую
-                $baseVolume = $quoteVolume / $book['price'];
-                // оставшийся обьем второго коина
-                $restQuoteVolume -= $quoteVolume;
-                // вычитает выбранный обьем из осавшегося(база-коин)
-                $restBaseVolume -= $baseVolume;
-                // купленный квот-коин
-                $this->buy['volume']['quote'] += $quoteVolume;
-                // обменянный база-коин
-                $this->buy['volume']['base'] += $baseVolume;
-                // записывает(перезаписывает) цену текущего ордера как конечную цену
-                $this->buy['price']['end'] = $book['price'];
 
-                $i++;
+                $baseVolume = $quoteVolume / $book['price'];
+
+                $restQuoteVolume -= $quoteVolume;
+                $restBaseVolume -= $baseVolume;
+
+                $this->buy['volume']['quote'] += $quoteVolume;
+                $this->buy['volume']['base'] += $baseVolume;
+                $this->buy['price']['end'] = $book['price'];
             }
         }
     }
 
     private function calculatePricesAndVolumesForSellExchange()
     {
-        // обьем, который нужно сьесть
-        $restBaseVolume = $this->sell['volume']['base'];
+        $restBaseVolume = $this->buy['volume']['base'];
+        $this->sell['volume']['base'] = 0;
         $this->sell['volume']['quote'] = 0;
-        // расчет конечной цены
-        // действие повторяетчя пока не сьест ввесь обьем
+
         foreach ($this->sell['book'] as $book) {
             if ($restBaseVolume > 0) {
-                // сравнивает оставшийся обьем и обьем текущего ордера(base coin), берет меньший
-                $baseVolume = min([$restBaseVolume, $book['value']]);
-                // вычитает выбранный обьем из осавшегося(база-коин)
+                $baseVolume = min($restBaseVolume, $book['value']);
                 $restBaseVolume -= $baseVolume;
-                // считает обьем quote coin в сьедаемом обьеме ордера и сравниваем с лимитом
                 $quoteVolume = $baseVolume * $book['price'];
-                // купленный квот-коин
                 $this->sell['volume']['quote'] += $quoteVolume;
-                // записывает(перезаписывает) цену текущего ордера как конечную цену
+                $this->sell['volume']['base'] += $baseVolume;
                 $this->sell['price']['end'] = $book['price'];
             }
         }
